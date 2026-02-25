@@ -1,0 +1,25 @@
+# Pasta de saída de compilação
+[Bb]in/
+[Oo]bj/
+[Tt]est[Cc]ontext/
+
+# Pastas geradas pelo MSBuild
+.ms-adms/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# Visual Studio Code
+.vscode/
+
+# NuGet Packages
+*.nuget.props
+*.nuget.targets
+packages/
+
+# Configurações com dados sensíveis
+appsettings.Development.json
