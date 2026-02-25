@@ -1,5 +1,6 @@
 ﻿using ConectElo.Domain.Areas.Base;
 using ConectElo.Domain.Areas.Eventos.Entities;
+using ConectElo.Domain.Areas.Geral.Enuns;
 using ConectElo.Domain.Areas.Social.Entities;
 
 namespace ConectElo.Domain.Areas.Geral.Entities

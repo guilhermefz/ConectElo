@@ -1,3 +1,5 @@
+using ConectElo.Infra.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConectElo.API
 {
@@ -12,6 +14,10 @@ namespace ConectElo.API
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("ConectElo.Infra")));
 
             var app = builder.Build();
 

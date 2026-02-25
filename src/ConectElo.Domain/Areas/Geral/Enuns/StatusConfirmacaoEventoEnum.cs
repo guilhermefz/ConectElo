@@ -1,4 +1,4 @@
-﻿namespace ConectElo.Domain.Areas.Geral.Entities
+﻿namespace ConectElo.Domain.Areas.Geral.Enuns
 {
     public enum StatusConfirmacaoEventoEnum
     {
