@@ -1,0 +1,6 @@
+@ConectElo.API_HostAddress = http://localhost:5106
+
+GET {{ConectElo.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
