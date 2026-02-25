@@ -18,4 +18,8 @@
     <ProjectReference Include="..\ConectElo.Application\ConectElo.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Areas\Social\" />
+  </ItemGroup>
+
 </Project>
