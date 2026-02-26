@@ -20,7 +20,7 @@ namespace ConectElo.Infra.Areas.Repositories.Base
            _dbSet.Update(entity);
         }
 
-        public async Task<int> CommitAsync()
+        public virtual async Task<int> CommitAsync()
         {
             return await _context.SaveChangesAsync();
         }
@@ -35,7 +35,7 @@ namespace ConectElo.Infra.Areas.Repositories.Base
             _dbSet.Remove(entity);
         }
 
-        public async Task Inserir(TEntity entity)
+        public virtual async Task Inserir(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
         }
