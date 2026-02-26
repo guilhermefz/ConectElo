@@ -1,0 +1,13 @@
+services:
+    db:
+        image: postgres:17.2
+        container_name: bancoconectelo
+        ports:
+            - "8080:5432"
+        environment:
+            - POSTGRES_PASSWORD=root
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    postgres_data:
