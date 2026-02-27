@@ -1,5 +1,10 @@
+using ConectElo.Application.Areas.Social.InterfacesService;
+using ConectElo.Application.Areas.Social.Services;
+using ConectElo.Domain.Areas.Social.InterfacesRepository;
+using ConectElo.Infra.Areas.Repositories;
 using ConectElo.Infra.Data;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 namespace ConectElo.API
 {
@@ -18,7 +23,7 @@ namespace ConectElo.API
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("ConectElo.Infra")));
-
+            
             builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
@@ -28,6 +33,7 @@ namespace ConectElo.API
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.MapScalarApiReference();
             }
 
             app.UseHttpsRedirection();
