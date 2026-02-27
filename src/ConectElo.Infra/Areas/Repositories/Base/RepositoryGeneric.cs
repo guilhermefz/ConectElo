@@ -15,9 +15,10 @@ namespace ConectElo.Infra.Areas.Repositories.Base
             _dbSet = context.Set<TEntity>();
         }
 
-        public virtual void Atualizar(TEntity entity)
+        public virtual async Task Atualizar(TEntity entity)
         {
            _dbSet.Update(entity);
+           await CommitAsync();
         }
 
         public virtual async Task<int> CommitAsync()
@@ -30,14 +31,16 @@ namespace ConectElo.Infra.Areas.Repositories.Base
             return _dbSet.AsNoTracking();
         }
 
-        public virtual void Excluir(TEntity entity)
+        public virtual async Task Excluir(TEntity entity)
         {
             _dbSet.Remove(entity);
+            await CommitAsync();
         }
 
         public virtual async Task Inserir(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
+            await CommitAsync();
         }
 
         public virtual async Task<TEntity?> SelecionarPorId(Guid id)

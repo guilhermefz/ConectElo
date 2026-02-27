@@ -5,8 +5,8 @@
         IQueryable<TEntity> Consultar();
         Task<TEntity?> SelecionarPorId(Guid id);
         Task Inserir(TEntity entity);
-        void Excluir(TEntity entity);
-        void Atualizar(TEntity entity);
+        Task Excluir(TEntity entity);
+        Task Atualizar(TEntity entity);
         Task<int> CommitAsync();
     }
 }

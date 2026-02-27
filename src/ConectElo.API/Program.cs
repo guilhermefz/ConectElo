@@ -19,6 +19,9 @@ namespace ConectElo.API
 
             builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("ConectElo.Infra")));
 
+            builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+            builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
