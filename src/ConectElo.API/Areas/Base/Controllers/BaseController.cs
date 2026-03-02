@@ -34,7 +34,7 @@ namespace ConectElo.API.Areas.Base.Controllers
             return NotFound(BaseResponse<object>.Falha(message));
         }
 
-        protected IActionResult ErrorReponse(Exception ex, string message = "Erro interno no servidor")
+        protected IActionResult ErrorResponse(Exception ex, string message = "Erro interno no servidor")
         {
             var listaDeErros = new List<string>();
 

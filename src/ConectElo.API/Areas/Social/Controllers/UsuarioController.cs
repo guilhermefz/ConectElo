@@ -1,5 +1,4 @@
 ﻿using ConectElo.API.Areas.Base.Controllers;
-using ConectElo.Application.Areas.Base;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +30,7 @@ namespace ConectElo.API.Areas.Social.Controllers
             }
             catch (Exception err)
             {
-                return ErrorReponse(err);
+                return ErrorResponse(err);
             }
         }
 
@@ -39,33 +38,55 @@ namespace ConectElo.API.Areas.Social.Controllers
         [Route("Buscar")]
         public async Task<IActionResult> BuscarUsuarioPorId (Guid id)
         {
-            if(id == null)
-                return NotFound();
+            try
+            {
+                var usuario = await _usuarioService.BuscarUsuarioPorId(id);
 
-            var usuario = await _usuarioService.BuscarUsuarioPorId(id);
-            return Ok(usuario);
+                if (usuario == null)
+                    return NotFoundResponse($"Usuário com ID {id} não foi encontrado.");
+
+                return OkResponse(usuario, "Usuário encontrado com sucesso.");
+            }
+            catch (Exception err)
+            {
+                return ErrorResponse(err, "Erro ao tentar localizar o usuário.");
+            }         
         }
 
         [HttpPost]
         [Route("Editar")]
-        public IActionResult EditarUsuario(Usuario usuario)
+        public async Task<IActionResult> EditarUsuario(Usuario usuario)
         {
-            if(usuario == null) 
-                return NotFound();
+            try
+            {
+                if(usuario == null)
+                    return BadRequestResponse("Dados inválidos para edição.");
 
-            _usuarioService.EditarUsuario(usuario);
-            return Ok();
+                await _usuarioService.EditarUsuario(usuario);
+                return OkResponse(true, "Usuário atualizado com sucesso!");
+            }
+            catch (Exception err)
+            {
+                return ErrorResponse(err, "Falha ao tentar atualizar usuário.");
+            }
         }
 
         [HttpPost]
         [Route("Delete")]
         public IActionResult ExcluirUsuario(Usuario usuario)
         {
-            if(usuario == null)
-                return NotFound();
+            try
+            {
+                if(usuario == null)
+                    return BadRequestResponse("Dados inválidos para exclusão.");
 
-            _usuarioService.ExcluirUsuario(usuario);
-            return Ok();
+                _usuarioService.ExcluirUsuario(usuario);
+                return OkResponse(true, "Usuario deletado com sucesso!");
+            }
+            catch (Exception err)
+            {
+                return ErrorResponse(err, "Falha ao tentar excluir usuário.");
+            }
         }
     }
 }
