@@ -2,7 +2,7 @@
 using ConectElo.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConectElo.Infra.Areas.Repositories.Base
+namespace ConectElo.Infra.Areas.Base
 {
     public abstract class RepositoryGeneric<TEntity> : IGenericRepository<TEntity> where TEntity : class
     {

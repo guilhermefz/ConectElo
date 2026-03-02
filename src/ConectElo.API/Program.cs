@@ -1,7 +1,7 @@
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Application.Areas.Social.Services;
 using ConectElo.Domain.Areas.Social.InterfacesRepository;
-using ConectElo.Infra.Areas.Repositories;
+using ConectElo.Infra.Areas.Social.Repositories;
 using ConectElo.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
