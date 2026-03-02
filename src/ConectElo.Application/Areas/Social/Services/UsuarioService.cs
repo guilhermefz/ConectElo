@@ -13,9 +13,10 @@ namespace ConectElo.Application.Areas.Social.Services
             _usuarioRepository = usuarioRepository;
         }
 
-        public async Task CriarUsuario(Usuario usuario)
+        public async Task<Usuario> CriarUsuario(Usuario usuario)
         {
             await _usuarioRepository.Inserir(usuario);
+            return usuario;
         }
 
         public async Task ExcluirUsuario(Usuario usuario)

@@ -1,30 +1,38 @@
-﻿using ConectElo.Application.Areas.Social.InterfacesService;
+﻿using ConectElo.API.Areas.Base.Controllers;
+using ConectElo.Application.Areas.Base;
+using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace ConectElo.API.Areas.Social.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsuarioController : ControllerBase
+    public class UsuarioController : BaseController
     {
         private readonly IUsuarioService _usuarioService;
 
-        public UsuarioController(IUsuarioService usuarioService)
+        public UsuarioController(IUsuarioService usuarioService, IWebHostEnvironment env) : base(env)
         {
             _usuarioService = usuarioService;
         }
 
         [HttpPost]
         [Route("Salvar")]
-        public IActionResult SalvarUsuario(Usuario usuario)
+        public async Task<IActionResult> SalvarUsuario([FromBody] Usuario usuario)
         {
-            if (usuario == null)
-                return NotFound();
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest();
 
-            _usuarioService.CriarUsuario(usuario);
-            return Ok();
+                var resultado = await _usuarioService.CriarUsuario(usuario);
+                return CreatedReponse(resultado, "Usuario cadastrado com sucesso!");
+            }
+            catch (Exception err)
+            {
+                return ErrorReponse(err);
+            }
         }
 
         [HttpGet]

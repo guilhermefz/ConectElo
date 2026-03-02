@@ -4,7 +4,7 @@ namespace ConectElo.Application.Areas.Social.InterfacesService
 {
     public interface IUsuarioService
     {
-        Task CriarUsuario(Usuario usuario);
+        Task<Usuario> CriarUsuario(Usuario usuario);
 
         Task ExcluirUsuario(Usuario usuario);
 
