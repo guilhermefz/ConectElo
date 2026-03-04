@@ -1,9 +1,12 @@
+using AutoMapper;
 using ConectElo.Application.Areas.Social.InterfacesService;
+using ConectElo.Application.Areas.Social.Mappers;
 using ConectElo.Application.Areas.Social.Services;
 using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using ConectElo.Infra.Areas.Social.Repositories;
 using ConectElo.Infra.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Scalar.AspNetCore;
 
 namespace ConectElo.API
@@ -17,6 +20,19 @@ namespace ConectElo.API
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            var mapperConfig = new MapperConfiguration(
+                cfg =>
+                {
+                    cfg.AddProfile<GrupoProfile>();
+                    cfg.AddProfile<UsuarioProfile>();
+                    cfg.AddProfile<MembroGrupoProfile>();
+                },
+                NullLoggerFactory.Instance
+            );
+
+            builder.Services.AddSingleton(mapperConfig.CreateMapper());
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
@@ -26,6 +42,12 @@ namespace ConectElo.API
             
             builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+            builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
+            builder.Services.AddScoped<IGrupoService, GrupoService>();
+            builder.Services.AddScoped<IMembrosGrupoRepository, MembrosGrupoRepository>();
+            builder.Services.AddScoped<IMembrosGrupoService, MembroGrupoService>();
+            builder.Services.AddScoped<IMuralRepository, MuralRepository>();
+            builder.Services.AddScoped<IMuralService, MuralService>();
 
             var app = builder.Build();
 
