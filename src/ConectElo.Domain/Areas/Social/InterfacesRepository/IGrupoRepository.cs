@@ -5,5 +5,6 @@ namespace ConectElo.Domain.Areas.Social.InterfacesRepository
 {
     public interface IGrupoRepository : IGenericRepository<Grupo>
     {
+        Task<Grupo?> ObterGrupoComInclude(Guid id);
     }
 }

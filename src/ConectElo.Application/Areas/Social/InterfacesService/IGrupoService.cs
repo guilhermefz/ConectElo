@@ -1,15 +1,16 @@
-﻿using ConectElo.Domain.Areas.Social.Entities;
+﻿using ConectElo.Application.Areas.Social.DTOs;
+using ConectElo.Domain.Areas.Social.Entities;
 
 namespace ConectElo.Application.Areas.Social.InterfacesService
 {
     public interface IGrupoService
     {
-        Task<Grupo> CriarGrupo(Grupo grupo);
+        Task<CriarGrupoDto?> CriarGrupo(CriarGrupoDto grupo);
 
-        Task ExcluirGrupo(Grupo grupo);
+        Task ExcluirGrupo(Guid id);
 
-        Task EditarGrupo(Grupo grupo);
+        Task EditarGrupo(EditarGrupoDto grupo);
 
-        Task<Grupo?> BuscarGrupoPorId(Guid id);
+        Task<BuscarGrupoDto?> BuscarGrupoPorId(Guid id);
     }
 }

@@ -2,6 +2,7 @@
 using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using ConectElo.Infra.Areas.Base;
 using ConectElo.Infra.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConectElo.Infra.Areas.Social.Repositories
 {
@@ -13,6 +14,15 @@ namespace ConectElo.Infra.Areas.Social.Repositories
         {
             _context = context;
         }
+
+        public async Task<Grupo?> ObterGrupoComInclude(Guid id)
+        {
+            return await _context.Grupos
+                .Include(g => g.Membros)
+                    .ThenInclude(m => m.Usuario)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(g => g.Id == id);
+        } 
 
     }
 }
