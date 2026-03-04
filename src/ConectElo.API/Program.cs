@@ -27,6 +27,7 @@ namespace ConectElo.API
                     cfg.AddProfile<GrupoProfile>();
                     cfg.AddProfile<UsuarioProfile>();
                     cfg.AddProfile<MembroGrupoProfile>();
+                    cfg.AddProfile<PostagemProfile>();
                 },
                 NullLoggerFactory.Instance
             );
@@ -48,6 +49,8 @@ namespace ConectElo.API
             builder.Services.AddScoped<IMembrosGrupoService, MembroGrupoService>();
             builder.Services.AddScoped<IMuralRepository, MuralRepository>();
             builder.Services.AddScoped<IMuralService, MuralService>();
+            builder.Services.AddScoped<IPostagemRepository, PostagemRepository>();
+            builder.Services.AddScoped<IPostagemService, PostagemService>();
 
             var app = builder.Build();
 
