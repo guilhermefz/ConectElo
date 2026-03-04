@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ConectElo.API.Areas.Social.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Usuario")]
     [ApiController]
     public class UsuarioController : BaseController
     {
