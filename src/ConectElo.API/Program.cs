@@ -1,8 +1,13 @@
 using AutoMapper;
+using ConectElo.Application.Areas.EventosArea.InterfacesService;
+using ConectElo.Application.Areas.EventosArea.Mappers;
+using ConectElo.Application.Areas.EventosArea.Services;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Application.Areas.Social.Mappers;
 using ConectElo.Application.Areas.Social.Services;
+using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
 using ConectElo.Domain.Areas.Social.InterfacesRepository;
+using ConectElo.Infra.Areas.Eventos.Repositories;
 using ConectElo.Infra.Areas.Social.Repositories;
 using ConectElo.Infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +33,7 @@ namespace ConectElo.API
                     cfg.AddProfile<UsuarioProfile>();
                     cfg.AddProfile<MembroGrupoProfile>();
                     cfg.AddProfile<PostagemProfile>();
+                    cfg.AddProfile<EventoProfile>();
                 },
                 NullLoggerFactory.Instance
             );
@@ -51,6 +57,8 @@ namespace ConectElo.API
             builder.Services.AddScoped<IMuralService, MuralService>();
             builder.Services.AddScoped<IPostagemRepository, PostagemRepository>();
             builder.Services.AddScoped<IPostagemService, PostagemService>();
+            builder.Services.AddScoped<IEventoRepository, EventoRepository>();
+            builder.Services.AddScoped<IEventoService, EventoService>();
 
             var app = builder.Build();
 
