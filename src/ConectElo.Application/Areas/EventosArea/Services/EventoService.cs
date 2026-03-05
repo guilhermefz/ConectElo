@@ -3,6 +3,7 @@ using ConectElo.Application.Areas.EventosArea.DTOs;
 using ConectElo.Application.Areas.EventosArea.InterfacesService;
 using ConectElo.Domain.Areas.Eventos.Entities;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
+using ConectElo.Domain.Exceptions;
 
 namespace ConectElo.Application.Areas.EventosArea.Services
 {
@@ -22,7 +23,7 @@ namespace ConectElo.Application.Areas.EventosArea.Services
             var evento = await _eventoRepository.SelecionarPorId(id);
 
             if (evento is null)
-                throw new KeyNotFoundException("Evento não encontrado.");
+                throw new NotFoundException("Evento não encontrado.");
 
             return _mapper.Map<ExibirEventoDto>(evento);
         }
@@ -48,7 +49,7 @@ namespace ConectElo.Application.Areas.EventosArea.Services
         {
             var evento = await _eventoRepository.SelecionarPorId(id);
             if (evento is null)
-                throw new Exception("Não existe um evento correspondente ao id enviado.");
+                throw new NotFoundException("Não existe um evento correspondente ao id enviado.");
 
             await _eventoRepository.Excluir(evento);
         }
