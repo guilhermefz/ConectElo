@@ -3,13 +3,15 @@ using ConectElo.Domain.Areas.Dinamicas.Entities;
 using ConectElo.Domain.Areas.Eventos.Entities;
 using ConectElo.Domain.Areas.Geral.Entities;
 using ConectElo.Domain.Areas.Social.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConectElo.Infra.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<Usuario, IdentityRole<Guid>, Guid>
     {
-        public AppDbContext(DbContextOptions options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         
             public DbSet<Usuario> Usuarios { get; set; }
             public DbSet<Mensagem> Mensagens { get; set; }
