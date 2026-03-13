@@ -10,7 +10,7 @@ namespace ConectElo.Application.Areas.Social.InterfacesService
 
         Task<IdentityResult> ExcluirUsuario(Usuario usuario);
 
-        Task EditarUsuario(Usuario usuario);
+        Task<IdentityResult> EditarUsuario(EditarUsuarioDto dto);
 
         Task<Usuario?> BuscarUsuarioPorId(Guid id);
     }
