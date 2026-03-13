@@ -79,15 +79,20 @@ namespace ConectElo.API.Areas.Social.Controllers
 
         [HttpPost]
         [Route("Delete")]
-        public IActionResult ExcluirUsuario(Usuario usuario)
+        public async Task<IActionResult> ExcluirUsuario(Usuario usuario)
         {
             try
             {
                 if(usuario == null)
                     return BadRequestResponse("Dados inválidos para exclusão.");
 
-                _usuarioService.ExcluirUsuario(usuario);
-                return OkResponse(true, "Usuario deletado com sucesso!");
+                var resultado = await _usuarioService.ExcluirUsuario(usuario);
+
+                if (resultado.Succeeded)
+                    return OkResponse(true, "Usuário deletado com sucesso!");
+
+                var erros = resultado.Errors.Select(e => e.Description).ToList();
+                return BadRequestResponse("Falha ao excluir usuário.", erros);
             }
             catch (Exception err)
             {
