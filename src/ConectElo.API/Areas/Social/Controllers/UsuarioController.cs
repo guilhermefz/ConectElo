@@ -1,4 +1,5 @@
 ﻿using ConectElo.API.Areas.Base.Controllers;
+using ConectElo.Application.Areas.Social.DTOs;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ namespace ConectElo.API.Areas.Social.Controllers
 
         [HttpPost]
         [Route("Salvar")]
-        public async Task<IActionResult> SalvarUsuario([FromBody] Usuario usuario)
+        public async Task<IActionResult> SalvarUsuario([FromBody] RegistrarUsuarioDto usuario)
         {
             try
             {
@@ -26,7 +27,12 @@ namespace ConectElo.API.Areas.Social.Controllers
                     return BadRequest();
 
                 var resultado = await _usuarioService.CriarUsuario(usuario);
-                return CreatedReponse(resultado, "Usuario cadastrado com sucesso!");
+
+                if (resultado.Succeeded)
+                    return CreatedReponse(resultado, "Usuario cadastrado com sucesso!");
+
+                var erros = resultado.Errors.Select(e => e.Description).ToList();
+                return BadRequestResponse("Falha ao registar utilizador", erros);
             }
             catch (Exception err)
             {

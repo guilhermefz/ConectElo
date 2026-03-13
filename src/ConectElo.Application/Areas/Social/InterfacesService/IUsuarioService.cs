@@ -1,10 +1,12 @@
-﻿using ConectElo.Domain.Areas.Social.Entities;
+﻿using ConectElo.Application.Areas.Social.DTOs;
+using ConectElo.Domain.Areas.Social.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace ConectElo.Application.Areas.Social.InterfacesService
 {
     public interface IUsuarioService
     {
-        Task<Usuario> CriarUsuario(Usuario usuario);
+        Task<IdentityResult> CriarUsuario(RegistrarUsuarioDto usuario);
 
         Task ExcluirUsuario(Usuario usuario);
 
