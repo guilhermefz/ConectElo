@@ -10,7 +10,8 @@ namespace ConectElo.Application.Areas.Social.Mappers
         {
             CreateMap<Usuario, RegistrarUsuarioDto>()
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.UserName))
-                .ReverseMap();
+                .ReverseMap()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
 
             CreateMap<EditarUsuarioDto, Usuario>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
