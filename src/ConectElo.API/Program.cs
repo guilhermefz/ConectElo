@@ -82,6 +82,22 @@ namespace ConectElo.API
 
             app.UseAuthorization();
 
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.Equals("/register", StringComparison.OrdinalIgnoreCase)
+                    && context.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status410Gone;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        sucesso = false,
+                        mensagem = "Este endpoint foi desativado. Use POST /api/Usuario/Salvar para registrar um novo usuário."
+                    });
+                    return;
+                }
+                await next(context);
+            });
 
             app.MapControllers();
 
