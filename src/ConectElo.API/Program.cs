@@ -1,4 +1,6 @@
 using AutoMapper;
+using ConectElo.Application.Areas.Autenticacao.InterfacesService;
+using ConectElo.Application.Areas.Autenticacao.Services;
 using ConectElo.Application.Areas.EventosArea.InterfacesService;
 using ConectElo.Application.Areas.EventosArea.Mappers;
 using ConectElo.Application.Areas.EventosArea.Services;
@@ -11,9 +13,13 @@ using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using ConectElo.Infra.Areas.Eventos.Repositories;
 using ConectElo.Infra.Areas.Social.Repositories;
 using ConectElo.Infra.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
+using System.Text;
 
 namespace ConectElo.API
 {
@@ -42,11 +48,60 @@ namespace ConectElo.API
             builder.Services.AddSingleton(mapperConfig.CreateMapper());
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            builder.Services.AddOpenApi(options =>
+            {
+                options.AddDocumentTransformer((document, context, ct) =>
+                {
+                    document.Components ??= new();
+                    document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
+                    {
+                        ["Bearer"] = new OpenApiSecurityScheme
+                        {
+                            Type = SecuritySchemeType.Http,
+                            Scheme = "bearer",
+                            BearerFormat = "JWT",
+                            Description = "Insira o token JWT obtido no endpoint de login."
+                        }
+                    };
+                    document.SecurityRequirements.Add(new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        }] = []
+                    });
+                    return Task.CompletedTask;
+                });
+            });
+
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("ConectElo.Infra")));
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                };
+            });
 
             builder.Services.AddAuthorization();
 
@@ -56,8 +111,8 @@ namespace ConectElo.API
             })
             .AddEntityFrameworkStores<AppDbContext>();
             
-            builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+            builder.Services.AddScoped<IAutenticacaoService, AutenticacaoService>();
             builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
             builder.Services.AddScoped<IGrupoService, GrupoService>();
             builder.Services.AddScoped<IMembrosGrupoRepository, MembrosGrupoRepository>();
@@ -80,8 +135,26 @@ namespace ConectElo.API
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
+            app.Use(async (context, next) =>
+            {
+                var desativados = new[] { "/register", "/login" };
+                if (desativados.Any(p => context.Request.Path.Equals(p, StringComparison.OrdinalIgnoreCase))
+                    && context.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status410Gone;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        sucesso = false,
+                        mensagem = "Este endpoint foi desativado. Use POST /api/Usuario/Salvar para registrar e POST /api/Autenticacao/Login para autenticar."
+                    });
+                    return;
+                }
+                await next(context);
+            });
 
             app.MapControllers();
 

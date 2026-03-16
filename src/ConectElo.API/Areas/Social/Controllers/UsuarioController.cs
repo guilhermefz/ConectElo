@@ -2,10 +2,12 @@
 using ConectElo.Application.Areas.Social.DTOs;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ConectElo.API.Areas.Social.Controllers
 {
+    [AllowAnonymous]
     [Route("api/Usuario")]
     [ApiController]
     public class UsuarioController : BaseController
@@ -61,15 +63,20 @@ namespace ConectElo.API.Areas.Social.Controllers
 
         [HttpPost]
         [Route("Editar")]
-        public async Task<IActionResult> EditarUsuario(Usuario usuario)
+        public async Task<IActionResult> EditarUsuario([FromBody] EditarUsuarioDto usuario)
         {
             try
             {
                 if(usuario == null)
                     return BadRequestResponse("Dados inválidos para edição.");
 
-                await _usuarioService.EditarUsuario(usuario);
-                return OkResponse(true, "Usuário atualizado com sucesso!");
+                var resultado = await _usuarioService.EditarUsuario(usuario);
+
+                if (resultado.Succeeded)
+                    return OkResponse(true, "Usuário atualizado com sucesso!");
+
+                var erros = resultado.Errors.Select(e => e.Description).ToList();
+                return BadRequestResponse("Falha ao atualizar usuário.", erros);
             }
             catch (Exception err)
             {
@@ -79,15 +86,20 @@ namespace ConectElo.API.Areas.Social.Controllers
 
         [HttpPost]
         [Route("Delete")]
-        public IActionResult ExcluirUsuario(Usuario usuario)
+        public async Task<IActionResult> ExcluirUsuario(Usuario usuario)
         {
             try
             {
                 if(usuario == null)
                     return BadRequestResponse("Dados inválidos para exclusão.");
 
-                _usuarioService.ExcluirUsuario(usuario);
-                return OkResponse(true, "Usuario deletado com sucesso!");
+                var resultado = await _usuarioService.ExcluirUsuario(usuario);
+
+                if (resultado.Succeeded)
+                    return OkResponse(true, "Usuário deletado com sucesso!");
+
+                var erros = resultado.Errors.Select(e => e.Description).ToList();
+                return BadRequestResponse("Falha ao excluir usuário.", erros);
             }
             catch (Exception err)
             {

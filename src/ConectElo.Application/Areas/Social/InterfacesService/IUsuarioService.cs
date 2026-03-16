@@ -8,9 +8,9 @@ namespace ConectElo.Application.Areas.Social.InterfacesService
     {
         Task<IdentityResult> CriarUsuario(RegistrarUsuarioDto usuario);
 
-        Task ExcluirUsuario(Usuario usuario);
+        Task<IdentityResult> ExcluirUsuario(Usuario usuario);
 
-        Task EditarUsuario(Usuario usuario);
+        Task<IdentityResult> EditarUsuario(EditarUsuarioDto dto);
 
         Task<Usuario?> BuscarUsuarioPorId(Guid id);
     }

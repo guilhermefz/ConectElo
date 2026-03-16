@@ -2,20 +2,18 @@
 using ConectElo.Application.Areas.Social.DTOs;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
-using ConectElo.Domain.Areas.Social.InterfacesRepository;
+using ConectElo.Domain.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
 namespace ConectElo.Application.Areas.Social.Services
 {
     public class UsuarioService : IUsuarioService
     {
-        private readonly IUsuarioRepository _usuarioRepository;
         private readonly UserManager<Usuario> _userManager;
         private readonly IMapper _mapper;
 
-        public UsuarioService (IUsuarioRepository usuarioRepository, UserManager<Usuario> userManager, IMapper mapper)
+        public UsuarioService(UserManager<Usuario> userManager, IMapper mapper)
         {
-            _usuarioRepository = usuarioRepository;
             _userManager = userManager;
             _mapper = mapper;
         }
@@ -23,18 +21,22 @@ namespace ConectElo.Application.Areas.Social.Services
         public async Task<IdentityResult> CriarUsuario(RegistrarUsuarioDto usuario)
         {
             var user = _mapper.Map<Usuario>(usuario);
-
-            return await _userManager.CreateAsync(user, user.PasswordHash);
+            return await _userManager.CreateAsync(user, usuario.password);
         }
 
-        public async Task ExcluirUsuario(Usuario usuario)
+        public async Task<IdentityResult> ExcluirUsuario(Usuario usuario)
         {
-           await _usuarioRepository.Excluir(usuario);
+            return await _userManager.DeleteAsync(usuario);
         }
 
-        public async Task EditarUsuario(Usuario usuario)
+        public async Task<IdentityResult> EditarUsuario(EditarUsuarioDto dto)
         {
-            await _usuarioRepository.Atualizar(usuario);
+            var usuario = await _userManager.FindByIdAsync(dto.Id.ToString())
+                ?? throw new NotFoundException($"Usuário com ID {dto.Id} não foi encontrado.");
+
+            _mapper.Map(dto, usuario);
+
+            return await _userManager.UpdateAsync(usuario);
         }
 
         public async Task<Usuario?> BuscarUsuarioPorId(Guid id)
