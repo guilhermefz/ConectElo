@@ -2,10 +2,12 @@
 using ConectElo.Application.Areas.Social.DTOs;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ConectElo.API.Areas.Social.Controllers
 {
+    [AllowAnonymous]
     [Route("api/Usuario")]
     [ApiController]
     public class UsuarioController : BaseController

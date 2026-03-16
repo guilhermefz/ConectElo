@@ -1,9 +1,11 @@
 ﻿using ConectElo.Application.Areas.Base;
 using ConectElo.Domain.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ConectElo.API.Areas.Base.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BaseController : ControllerBase

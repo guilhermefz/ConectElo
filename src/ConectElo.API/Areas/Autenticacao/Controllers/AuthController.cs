@@ -1,10 +1,12 @@
 ﻿using ConectElo.API.Areas.Base.Controllers;
 using ConectElo.Application.Areas.Autenticacao.DTOs;
 using ConectElo.Application.Areas.Autenticacao.InterfacesService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ConectElo.API.Areas.Authorization.Controllers
 {
+    [AllowAnonymous]
     [Route("api/Autenticacao")]
     [ApiController]
     public class AuthController : BaseController
