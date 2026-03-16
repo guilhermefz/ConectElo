@@ -52,6 +52,7 @@ namespace ConectElo.API
             {
                 options.AddDocumentTransformer((document, context, ct) =>
                 {
+                    document.Servers = [new OpenApiServer { Url = "http://localhost:4002" }];
                     document.Components ??= new();
                     document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
                     {
@@ -132,8 +133,6 @@ namespace ConectElo.API
                 app.MapOpenApi();
                 app.MapScalarApiReference();
             }
-
-            app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
