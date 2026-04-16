@@ -52,7 +52,7 @@ namespace ConectElo.API
             {
                 options.AddDocumentTransformer((document, context, ct) =>
                 {
-                    document.Servers = [new OpenApiServer { Url = "http://localhost:4002" }];
+                    document.Servers = [new OpenApiServer { Url = "http://localhost:5000" }];
                     document.Components ??= new();
                     document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
                     {
@@ -125,6 +125,14 @@ namespace ConectElo.API
             builder.Services.AddScoped<IEventoRepository, EventoRepository>();
             builder.Services.AddScoped<IEventoService, EventoService>();
 
+            builder.Services.AddCors(options => {
+                options.AddPolicy("Default", policy => {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -135,6 +143,7 @@ namespace ConectElo.API
             }
 
             app.UseAuthentication();
+            app.UseCors("Default");
             app.UseAuthorization();
 
             app.Use(async (context, next) =>
@@ -154,6 +163,7 @@ namespace ConectElo.API
                 }
                 await next(context);
             });
+
 
             app.MapControllers();
 
