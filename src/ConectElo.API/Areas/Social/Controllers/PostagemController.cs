@@ -19,12 +19,19 @@ namespace ConectElo.API.Areas.Social.Controllers
 
         [HttpPost]
         [Route("Salvar")]
-        public async Task<IActionResult> SalvarUsuario([FromBody] CriarPostagemDto postagem)
+        public async Task<IActionResult> CriarPostagem([FromBody] CriarPostagemDto postagem)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest();
+
+                var usuarioIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(usuarioIdClaim))
+                    return UnauthorizedResponse("Usuário não identificado.");
+
+                postagem.UsuarioId = Guid.Parse(usuarioIdClaim);
 
                 var resultado = await _postagemService.CriarPostagens(postagem);
                 return CreatedReponse(resultado, "Postagem publicada com sucesso!");
