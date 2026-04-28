@@ -34,6 +34,14 @@ namespace ConectElo.Infra.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Postagens>()
+               .HasIndex(p => new { p.MuralId, p.DataPostagem })
+               .HasDatabaseName("IX_Postagens_MuralId_DataPostagem");
+
+            modelBuilder.Entity<MembrosGrupo>()
+                .HasIndex(m => m.UsuarioId)
+                .HasDatabaseName("IX_MembrosGrupo_UsuarioId");
         }
     }
 }
