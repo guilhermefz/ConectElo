@@ -124,6 +124,7 @@ namespace ConectElo.API
             builder.Services.AddScoped<IPostagemService, PostagemService>();
             builder.Services.AddScoped<IEventoRepository, EventoRepository>();
             builder.Services.AddScoped<IEventoService, EventoService>();
+            builder.Services.AddScoped<IFeedService, FeedService>();
 
             builder.Services.AddCors(options => {
                 options.AddPolicy("Default", policy => {
