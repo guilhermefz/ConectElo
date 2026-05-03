@@ -13,6 +13,8 @@ namespace ConectElo.Application.Areas.Social.Mappers
             CreateMap<BuscarGrupoDto, Grupo>().ReverseMap();
 
             CreateMap<EditarGrupoDto, Grupo>().ReverseMap();
+
+            CreateMap<Grupo, GrupoExibicaoDto>();
         }
     }
 }
