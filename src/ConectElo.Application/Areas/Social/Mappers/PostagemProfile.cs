@@ -11,6 +11,11 @@ namespace ConectElo.Application.Areas.Social.Mappers
             CreateMap<EditarPostagemDto, Postagens>().ReverseMap();
             CreateMap<CriarPostagemDto, Postagens>().ReverseMap();
             CreateMap<ExibirPostagemDto, Postagens>().ReverseMap();
+
+            CreateMap<Postagens, FeedPostagemDto>()
+                .ForMember(dest => dest.NomeAutor,opt => opt.MapFrom(src => src.Autor.Nome))
+                .ForMember(dest => dest.GrupoId,opt => opt.Ignore())
+                .ForMember(dest => dest.NomeGrupo,opt => opt.Ignore());
         }
     }
 }

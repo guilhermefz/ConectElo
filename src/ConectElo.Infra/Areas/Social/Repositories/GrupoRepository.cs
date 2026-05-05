@@ -22,7 +22,15 @@ namespace ConectElo.Infra.Areas.Social.Repositories
                     .ThenInclude(m => m.Usuario)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(g => g.Id == id);
-        } 
+        }
 
+        public async Task<IEnumerable<Grupo>> BuscarPorUsuario(Guid usuarioId)
+        {
+            return await _context.Grupos
+                .Include(g => g.Membros)
+                .AsNoTracking()
+                .Where(g => g.Membros.Any(m => m.UsuarioId == usuarioId))
+                .ToListAsync();
+        }
     }
 }

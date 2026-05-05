@@ -17,7 +17,7 @@ services:
         depends_on:
             - db
         ports:
-            - "4002:8080"
+            - "5000:8080"
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
             - ASPNETCORE_HTTP_PORTS=8080
@@ -26,6 +26,8 @@ services:
             - Jwt__Issuer=ConectElo
             - Jwt__Audience=ConectElo
             - Jwt__ExpiresInHours=8
+        volumes:
+            - ./uploads:/app/uploads
         networks:
             - conectelo-network
 

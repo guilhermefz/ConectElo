@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ConectElo.Application.Areas.Social.DTOs;
+using ConectElo.Application.Areas.Social.DTOs.Perfil;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
 using ConectElo.Domain.Exceptions;
@@ -10,12 +11,14 @@ namespace ConectElo.Application.Areas.Social.Services
     public class UsuarioService : IUsuarioService
     {
         private readonly UserManager<Usuario> _userManager;
+        private readonly IArquivoService _arquivoService;
         private readonly IMapper _mapper;
 
-        public UsuarioService(UserManager<Usuario> userManager, IMapper mapper)
+        public UsuarioService(UserManager<Usuario> userManager, IMapper mapper, IArquivoService arquivoService)
         {
             _userManager = userManager;
             _mapper = mapper;
+            _arquivoService = arquivoService;
         }
 
         public async Task<IdentityResult> CriarUsuario(RegistrarUsuarioDto usuario)
@@ -42,6 +45,69 @@ namespace ConectElo.Application.Areas.Social.Services
         public async Task<Usuario?> BuscarUsuarioPorId(Guid id)
         {
             return await _userManager.FindByIdAsync(id.ToString());
+        }
+
+        public async Task<PerfilUsuarioDto> ObterPerfilAsync(Guid usuarioId)
+        {
+            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString());
+
+            if (usuario == null)
+                throw new NotFoundException("Usuario não encontrado.");
+
+            return _mapper.Map<PerfilUsuarioDto>(usuario);
+        }
+
+        public async Task<PerfilUsuarioDto> AtualizarPerfilAsync(Guid usuarioId, AtualizarPerfilDto dto)
+        {
+            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString());
+
+            if (usuario == null)
+                throw new NotFoundException("Usuario não encontrado");
+
+            if(!string.Equals(usuario.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var emailEmUso = await _userManager.FindByEmailAsync(dto.Email);
+                if (emailEmUso is not null)
+                    throw new ConflictException("Este e-mail já está em uso");
+            }
+
+            usuario.Nome = dto.Nome;
+            usuario.Email = dto.Email;
+            usuario.UserName = dto.Email;
+            usuario.Bio = dto.Bio;
+            usuario.DataNascimento = dto.DataNascimento;
+            usuario.Genero = dto.Genero;
+            usuario.UltimaAtualizacao = DateTime.UtcNow;
+
+            var resultado = await _userManager.UpdateAsync(usuario);
+
+            if (!resultado.Succeeded)
+                throw new BusinessException("Erro ao atualizar perfil.");
+
+            return _mapper.Map<PerfilUsuarioDto>(usuario);
+        }
+
+        public async Task<string> AtualizarFotoPerfilAsync(Guid usuarioId, AtualizarFotoDto foto)
+        {
+            var usuario = _userManager.FindByIdAsync(usuarioId.ToString());
+
+            if (usuario is null)
+                throw new NotFoundException("Usuário não encontrado");
+
+            if (!string.IsNullOrEmpty(usuario.Result.FotoPerdilUrl))
+                _arquivoService.DeletarArquivo(usuario.Result.FotoPerdilUrl);
+
+            var urlNovaFoto = await _arquivoService.SalvarFotoPerfilAsync(foto, usuarioId);
+
+            usuario.Result.FotoPerdilUrl = urlNovaFoto;
+            usuario.Result.UltimaAtualizacao = DateTime.UtcNow;
+
+            var resultado = await _userManager.UpdateAsync(usuario.Result);
+
+            if (!resultado.Succeeded)
+                throw new NotFoundException("Erro ao salvar foto de perfil");
+
+            return urlNovaFoto;
         }
     }
 }

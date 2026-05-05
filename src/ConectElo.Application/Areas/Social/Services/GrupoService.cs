@@ -64,6 +64,12 @@ namespace ConectElo.Application.Areas.Social.Services
             await _grupoRepository.Atualizar(grupo);
         }
 
+        public async Task<IEnumerable<GrupoExibicaoDto>> BuscarGruposPorUsuario(Guid usuarioId)
+        {
+            var grupos = await _grupoRepository.BuscarPorUsuario(usuarioId);
+            return _mapper.Map<IEnumerable<GrupoExibicaoDto>>(grupos);
+        }
+
         public async Task ExcluirGrupo(Guid id)
         {
             var grupo = await _grupoRepository.SelecionarPorId(id);

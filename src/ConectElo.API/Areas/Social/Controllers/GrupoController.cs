@@ -35,6 +35,21 @@ namespace ConectElo.API.Areas.Social.Controllers
         }
 
         [HttpGet]
+        [Route("BuscarPorUsuario/{usuarioId:guid}")]
+        public async Task<IActionResult> BuscarGruposPorUsuario(Guid usuarioId)
+        {
+            try
+            {
+                var grupos = await _grupoService.BuscarGruposPorUsuario(usuarioId);
+                return OkResponse(grupos, "Grupos encontrados com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex, "Erro ao buscar grupos do usuário.");
+            }
+        }
+
+        [HttpGet]
         [Route("Buscar")]
         public async Task<IActionResult> BuscarGrupoPorId(Guid id)
         {

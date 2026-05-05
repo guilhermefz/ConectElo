@@ -12,5 +12,6 @@ namespace ConectElo.Application.Areas.Social.InterfacesService
         Task EditarGrupo(EditarGrupoDto grupo);
 
         Task<BuscarGrupoDto?> BuscarGrupoPorId(Guid id);
+        Task<IEnumerable<GrupoExibicaoDto>> BuscarGruposPorUsuario(Guid usuarioId);
     }
 }

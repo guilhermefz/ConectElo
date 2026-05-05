@@ -5,5 +5,6 @@ namespace ConectElo.Domain.Areas.Social.InterfacesRepository
 {
     public interface IPostagemRepository : IGenericRepository<Postagens>
     {
+        Task<IEnumerable<Postagens>> ObterFeedDoUsuario(Guid usuarioId, int pagina, int tamanhoPagina);
     }
 }

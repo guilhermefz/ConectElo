@@ -15,6 +15,7 @@ using ConectElo.Infra.Areas.Social.Repositories;
 using ConectElo.Infra.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -52,7 +53,7 @@ namespace ConectElo.API
             {
                 options.AddDocumentTransformer((document, context, ct) =>
                 {
-                    document.Servers = [new OpenApiServer { Url = "http://localhost:4002" }];
+                    document.Servers = [new OpenApiServer { Url = "http://localhost:5000" }];
                     document.Components ??= new();
                     document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
                     {
@@ -82,7 +83,7 @@ namespace ConectElo.API
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("ConectElo.Infra")));
+            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("ConectElo.Infra")).EnableThreadSafetyChecks(false));
 
             builder.Services.AddAuthentication(options =>
             {
@@ -124,6 +125,17 @@ namespace ConectElo.API
             builder.Services.AddScoped<IPostagemService, PostagemService>();
             builder.Services.AddScoped<IEventoRepository, EventoRepository>();
             builder.Services.AddScoped<IEventoService, EventoService>();
+            builder.Services.AddScoped<IFeedService, FeedService>();
+            builder.Services.AddScoped<IArquivoRepository, ArquivoRepository>();
+            builder.Services.AddScoped<IArquivoService, ArquivoService>();
+
+            builder.Services.AddCors(options => {
+                options.AddPolicy("Default", policy => {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
 
             var app = builder.Build();
 
@@ -134,8 +146,17 @@ namespace ConectElo.API
                 app.MapScalarApiReference();
             }
 
+            var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+            Directory.CreateDirectory(uploadsPath);
+
             app.UseAuthentication();
+            app.UseCors("Default");
             app.UseAuthorization();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(uploadsPath),
+                RequestPath = "/uploads"
+            });
 
             app.Use(async (context, next) =>
             {
@@ -154,6 +175,7 @@ namespace ConectElo.API
                 }
                 await next(context);
             });
+
 
             app.MapControllers();
 
