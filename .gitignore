@@ -23,3 +23,9 @@ packages/
 
 # Configurações com dados sensíveis
 appsettings.Development.json
+
+# Uploads gerados em runtime (preserva a estrutura de pastas)
+uploads/**
+!uploads/.gitkeep
+!uploads/fotos-perfil/
+!uploads/fotos-perfil/.gitkeep
