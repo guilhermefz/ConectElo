@@ -26,6 +26,8 @@ services:
             - Jwt__Issuer=ConectElo
             - Jwt__Audience=ConectElo
             - Jwt__ExpiresInHours=8
+        volumes:
+            - ./uploads:/app/uploads
         networks:
             - conectelo-network
 
