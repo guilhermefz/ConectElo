@@ -3,6 +3,7 @@ using ConectElo.Application.Areas.Social.DTOs.Perfil;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace ConectElo.API.Areas.Social.Controllers
 {
@@ -50,18 +51,18 @@ namespace ConectElo.API.Areas.Social.Controllers
 
         [HttpPatch("AtualizaFoto")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> AtualizarFoto([FromForm] UploadFotoDto request)
+        public async Task<IActionResult> AtualizarFoto(IFormFile foto)
         {
             try
             {
-                if (request.Foto is null || request.Foto.Length == 0)
+                if (foto is null || foto.Length == 0)
                     return BadRequestResponse("Nenhuma foto enviada.");
 
                 var fotoDto = new AtualizarFotoDto
                 {
-                    Conteudo = request.Foto.OpenReadStream(),
-                    NomeArquivo = request.Foto.FileName,
-                    Tamanho = request.Foto.Length
+                    Conteudo = foto.OpenReadStream(),
+                    NomeArquivo = foto.FileName,
+                    Tamanho = foto.Length
                 };
 
                 var resultado = await _usuarioService.AtualizarFotoPerfilAsync(usuarioIdLogado, fotoDto);
