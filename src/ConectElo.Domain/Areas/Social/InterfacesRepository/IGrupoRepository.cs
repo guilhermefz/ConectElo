@@ -7,5 +7,6 @@ namespace ConectElo.Domain.Areas.Social.InterfacesRepository
     {
         Task<Grupo?> ObterGrupoComInclude(Guid id);
         Task<IEnumerable<Grupo>> BuscarPorUsuario(Guid usuarioId);
+        Task<Grupo?> BuscarPorCodigoConvite(string codigo);
     }
 }

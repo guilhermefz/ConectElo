@@ -107,6 +107,34 @@ namespace ConectElo.API.Areas.Social.Controllers
             }
         }
 
+        [HttpPost("{grupoId:guid}/GerarConvite")]
+        public async Task<IActionResult> GerarConvite(Guid grupoId)
+        {
+            try
+            {
+                var codigo = await _grupoService.GerarCodigoConviteAsync(grupoId, usuarioIdLogado);
+                return OkResponse(codigo, "Link de convite gerado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpPost("EntrarPorConvite/{codigo}")]
+        public async Task<IActionResult> EntrarPorConvite(string codigo)
+        {
+            try
+            {
+                var grupo = await _grupoService.EntrarPorConviteAsync(codigo, usuarioIdLogado);
+                return OkResponse(grupo, "Você entrou no grupo com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
         [HttpPatch("{grupoId:guid}/AtualizarFoto")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AtualizarFotoGrupo(Guid grupoId, IFormFile foto)

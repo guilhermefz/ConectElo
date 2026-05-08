@@ -105,5 +105,48 @@ namespace ConectElo.Application.Areas.Social.Services
 
             return urlNovaFoto;
         }
+
+        public async Task<string> GerarCodigoConviteAsync(Guid grupoId, Guid usuarioId)
+        {
+            var grupo = await _grupoRepository.ObterGrupoComInclude(grupoId);
+
+            if (grupo is null)
+                throw new NotFoundException("Grupo não encontrado.");
+
+            var membro = grupo.Membros.FirstOrDefault(m => m.UsuarioId == usuarioId);
+            if (membro is null || membro.Tipo == TipoPermissaoMembroEnum.Comum)
+                throw new UnathorizedException("Apenas administradores e proprietários podem gerar o link de convite.");
+
+            var codigo = Guid.NewGuid().ToString("N");
+
+            grupo.CodigoConvite = codigo;
+            grupo.UltimaAtualizacao = DateTime.UtcNow;
+
+            await _grupoRepository.Atualizar(grupo);
+
+            return codigo;
+        }
+
+        public async Task<GrupoExibicaoDto> EntrarPorConviteAsync(string codigoConvite, Guid usuarioId)
+        {
+            var grupo = await _grupoRepository.BuscarPorCodigoConvite(codigoConvite);
+
+            if (grupo is null)
+                throw new NotFoundException("Convite inválido ou expirado.");
+
+            var jaEMembro = grupo.Membros.Any(m => m.UsuarioId == usuarioId);
+            if (jaEMembro)
+                throw new ConflictException("Você já é membro deste grupo.");
+
+            await _membrosGrupoRepository.Inserir(new MembrosGrupo
+            {
+                UsuarioId = usuarioId,
+                GrupoId = grupo.Id,
+                Tipo = TipoPermissaoMembroEnum.Comum,
+                DataEntrada = DateTime.UtcNow,
+            });
+
+            return _mapper.Map<GrupoExibicaoDto>(grupo);
+        }
     }
 }
