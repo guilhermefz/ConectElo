@@ -1,4 +1,5 @@
 ﻿using ConectElo.Domain.Areas.Base;
+using ConectElo.Domain.Areas.Social.Enuns;
 
 namespace ConectElo.Domain.Areas.Social.Entities
 {
@@ -7,6 +8,8 @@ namespace ConectElo.Domain.Areas.Social.Entities
         public string Nome { get; set; }
         public string Descricao { get; set; }
         public string? CodigoConvite { get; set; }
+        public DateTime? CodigoConviteExpiracao { get; set; }
+        public TipoExpiracaoConviteEnum? TipoExpiracaoEConvite { get; set; }
         public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
         public DateTime? DataDelecao { get; set; }
         public string? ImgGrupo { get; set; }

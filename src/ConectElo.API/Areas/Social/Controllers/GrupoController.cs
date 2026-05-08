@@ -108,11 +108,11 @@ namespace ConectElo.API.Areas.Social.Controllers
         }
 
         [HttpPost("{grupoId:guid}/GerarConvite")]
-        public async Task<IActionResult> GerarConvite(Guid grupoId)
+        public async Task<IActionResult> GerarConvite(Guid grupoId, [FromBody] GerarConviteDto dto)
         {
             try
             {
-                var codigo = await _grupoService.GerarCodigoConviteAsync(grupoId, usuarioIdLogado);
+                var codigo = await _grupoService.GerarCodigoConviteAsync(grupoId, usuarioIdLogado, dto.TipoExpiracao);
                 return OkResponse(codigo, "Link de convite gerado com sucesso.");
             }
             catch (Exception ex)

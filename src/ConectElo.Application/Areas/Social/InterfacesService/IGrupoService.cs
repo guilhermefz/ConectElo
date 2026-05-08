@@ -1,5 +1,6 @@
 ﻿using ConectElo.Application.Areas.Social.DTOs;
 using ConectElo.Application.Areas.Social.DTOs.Perfil;
+using ConectElo.Domain.Areas.Social.Enuns;
 
 namespace ConectElo.Application.Areas.Social.InterfacesService
 {
@@ -11,7 +12,7 @@ namespace ConectElo.Application.Areas.Social.InterfacesService
         Task<BuscarGrupoDto?> BuscarGrupoPorId(Guid id);
         Task<IEnumerable<GrupoExibicaoDto>> BuscarGruposPorUsuario(Guid usuarioId);
         Task<string> AtualizarFotoGrupoAsync(Guid grupoId, Guid usuarioId, AtualizarFotoDto foto);
-        Task<string> GerarCodigoConviteAsync(Guid grupoId, Guid usuarioId);
+        Task<ConviteGeradoDto> GerarCodigoConviteAsync(Guid grupoId, Guid usuarioId, TipoExpiracaoConviteEnum tipoExpiracao);
         Task<GrupoExibicaoDto> EntrarPorConviteAsync(string codigoConvite, Guid usuarioId);
     }
 }

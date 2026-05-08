@@ -6,6 +6,7 @@ using ConectElo.Domain.Areas.Social.Entities;
 using ConectElo.Domain.Areas.Social.Enuns;
 using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using ConectElo.Domain.Exceptions;
+using ConectElo.Application.Areas.Social.Utils;
 
 namespace ConectElo.Application.Areas.Social.Services
 {
@@ -106,7 +107,7 @@ namespace ConectElo.Application.Areas.Social.Services
             return urlNovaFoto;
         }
 
-        public async Task<string> GerarCodigoConviteAsync(Guid grupoId, Guid usuarioId)
+        public async Task<ConviteGeradoDto> GerarCodigoConviteAsync(Guid grupoId, Guid usuarioId, TipoExpiracaoConviteEnum tipoExpiracao)
         {
             var grupo = await _grupoRepository.ObterGrupoComInclude(grupoId);
 
@@ -117,14 +118,22 @@ namespace ConectElo.Application.Areas.Social.Services
             if (membro is null || membro.Tipo == TipoPermissaoMembroEnum.Comum)
                 throw new UnathorizedException("Apenas administradores e proprietários podem gerar o link de convite.");
 
-            var codigo = Guid.NewGuid().ToString("N");
+            var codigo = ConviteUtils.GerarCodigo();
+            var expiracao = ConviteUtils.CalcularExpiracao(tipoExpiracao);
 
             grupo.CodigoConvite = codigo;
+            grupo.CodigoConviteExpiracao = expiracao;
+            grupo.TipoExpiracaoEConvite = tipoExpiracao;
             grupo.UltimaAtualizacao = DateTime.UtcNow;
 
             await _grupoRepository.Atualizar(grupo);
 
-            return codigo;
+            return new ConviteGeradoDto
+            {
+                Codigo = codigo,
+                TipoExpiracao = tipoExpiracao,
+                ExpiraEm = expiracao
+            };
         }
 
         public async Task<GrupoExibicaoDto> EntrarPorConviteAsync(string codigoConvite, Guid usuarioId)
@@ -132,6 +141,9 @@ namespace ConectElo.Application.Areas.Social.Services
             var grupo = await _grupoRepository.BuscarPorCodigoConvite(codigoConvite);
 
             if (grupo is null)
+                throw new NotFoundException("Convite inválido ou expirado.");
+
+            if (grupo.CodigoConviteExpiracao.HasValue && grupo.CodigoConviteExpiracao < DateTime.UtcNow)
                 throw new NotFoundException("Convite inválido ou expirado.");
 
             var jaEMembro = grupo.Membros.Any(m => m.UsuarioId == usuarioId);
