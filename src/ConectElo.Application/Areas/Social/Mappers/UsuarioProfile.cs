@@ -18,7 +18,10 @@ namespace ConectElo.Application.Areas.Social.Mappers
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UltimaAtualizacao, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
-            CreateMap<PerfilUsuarioDto, Usuario>().ReverseMap();
+            CreateMap<Usuario, PerfilUsuarioDto>()
+                .ForMember(dest => dest.FotoPerfilUrl, opt => opt.MapFrom(src => src.FotoPerdilUrl));
+            CreateMap<PerfilUsuarioDto, Usuario>()
+                .ForMember(dest => dest.FotoPerdilUrl, opt => opt.MapFrom(src => src.FotoPerfilUrl));
         }
     }
 }
