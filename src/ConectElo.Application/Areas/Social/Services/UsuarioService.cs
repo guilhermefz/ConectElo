@@ -89,20 +89,20 @@ namespace ConectElo.Application.Areas.Social.Services
 
         public async Task<string> AtualizarFotoPerfilAsync(Guid usuarioId, AtualizarFotoDto foto)
         {
-            var usuario = _userManager.FindByIdAsync(usuarioId.ToString());
+            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString());
 
             if (usuario is null)
                 throw new NotFoundException("Usuário não encontrado");
 
-            if (!string.IsNullOrEmpty(usuario.Result.FotoPerdilUrl))
-                _arquivoService.DeletarArquivo(usuario.Result.FotoPerdilUrl);
+            if (!string.IsNullOrEmpty(usuario.FotoPerdilUrl))
+                _arquivoService.DeletarArquivo(usuario.FotoPerdilUrl);
 
             var urlNovaFoto = await _arquivoService.SalvarFotoPerfilAsync(foto, usuarioId);
 
-            usuario.Result.FotoPerdilUrl = urlNovaFoto;
-            usuario.Result.UltimaAtualizacao = DateTime.UtcNow;
+            usuario.FotoPerdilUrl = urlNovaFoto;
+            usuario.UltimaAtualizacao = DateTime.UtcNow;
 
-            var resultado = await _userManager.UpdateAsync(usuario.Result);
+            var resultado = await _userManager.UpdateAsync(usuario);
 
             if (!resultado.Succeeded)
                 throw new NotFoundException("Erro ao salvar foto de perfil");

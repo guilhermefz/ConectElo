@@ -10,5 +10,6 @@
         public Guid MuralId { get; set; }
         public Guid GrupoId { get; set; }
         public string NomeGrupo { get; set; }
+        public string? FotoPerfilUrl { get; set; }
     }
 }
