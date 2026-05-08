@@ -6,6 +6,7 @@
         public string Nome { get; set; }
         public string Descricao { get; set; }
         public Guid MuralId { get; set; }
+        public string ImgGrupo { get; set; }
 
         public List<MembroGrupoExibicaoDto> Membros { get; set; }
     }

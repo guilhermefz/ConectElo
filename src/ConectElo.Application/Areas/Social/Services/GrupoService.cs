@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using ConectElo.Application.Areas.Social.DTOs;
+using ConectElo.Application.Areas.Social.DTOs.Perfil;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
 using ConectElo.Domain.Areas.Social.Enuns;
 using ConectElo.Domain.Areas.Social.InterfacesRepository;
+using ConectElo.Domain.Exceptions;
 
 namespace ConectElo.Application.Areas.Social.Services
 {
@@ -11,13 +13,17 @@ namespace ConectElo.Application.Areas.Social.Services
     {
         private readonly IGrupoRepository _grupoRepository;
         private readonly IMuralRepository _muralRepository;
+        private readonly IMembrosGrupoRepository _membrosGrupoRepository;
+        private readonly IArquivoService _arquivoService;
         private readonly IMapper _mapper;
 
-        public GrupoService (IGrupoRepository grupoRepository, IMapper mapper, IMuralRepository muralRepository)
+        public GrupoService(IGrupoRepository grupoRepository, IMapper mapper, IMuralRepository muralRepository, IArquivoService arquivoService, IMembrosGrupoRepository membrosGrupoRepository)
         {
             _grupoRepository = grupoRepository;
             _mapper = mapper;
             _muralRepository = muralRepository;
+            _arquivoService = arquivoService;
+            _membrosGrupoRepository = membrosGrupoRepository;
         }
 
         public async Task<BuscarGrupoDto?> BuscarGrupoPorId(Guid id)
@@ -74,6 +80,30 @@ namespace ConectElo.Application.Areas.Social.Services
         {
             var grupo = await _grupoRepository.SelecionarPorId(id);
             await _grupoRepository.Excluir(grupo);
+        }
+
+        public async Task<string> AtualizarFotoGrupoAsync(Guid grupoId, Guid usuarioId, AtualizarFotoDto foto)
+        {
+            var grupo = await _grupoRepository.ObterGrupoComInclude(grupoId);
+
+            if (grupo is null)
+                throw new NotFoundException("Grupo não encontrado.");
+
+            var membro = grupo.Membros.FirstOrDefault(m => m.UsuarioId == usuarioId);
+            if (membro is null || membro.Tipo == TipoPermissaoMembroEnum.Comum)
+                throw new UnathorizedException("Apenas administradores e proprietários podem alterar a foto do grupo.");
+
+            if (!string.IsNullOrEmpty(grupo.ImgGrupo))
+                _arquivoService.DeletarArquivo(grupo.ImgGrupo);
+
+            var urlNovaFoto = await _arquivoService.SalvarFotoGrupoAsync(foto, grupoId);
+
+            grupo.ImgGrupo = urlNovaFoto;
+            grupo.UltimaAtualizacao = DateTime.UtcNow;
+
+            await _grupoRepository.Atualizar(grupo);
+
+            return urlNovaFoto;
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using ConectElo.API.Areas.Base.Controllers;
 using ConectElo.Application.Areas.Social.DTOs;
+using ConectElo.Application.Areas.Social.DTOs.Perfil;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ConectElo.API.Areas.Social.Controllers
 {
@@ -10,6 +12,7 @@ namespace ConectElo.API.Areas.Social.Controllers
     public class GrupoController : BaseController
     {
         private readonly IGrupoService _grupoService;
+        private Guid usuarioIdLogado => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         public GrupoController(IGrupoService grupoService, IWebHostEnvironment env) : base(env)
         {
@@ -101,6 +104,31 @@ namespace ConectElo.API.Areas.Social.Controllers
             catch(Exception ex)
             {
                 return ErrorResponse(ex, "Falha ao tentar excluir grupo.");
+            }
+        }
+
+        [HttpPatch("{grupoId:guid}/AtualizarFoto")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> AtualizarFotoGrupo(Guid grupoId, IFormFile foto)
+        {
+            try
+            {
+                if (foto is null || foto.Length == 0)
+                    return BadRequestResponse("Nenhuma foto enviada.");
+
+                var fotoDto = new AtualizarFotoDto
+                {
+                    Conteudo = foto.OpenReadStream(),
+                    NomeArquivo = foto.FileName,
+                    Tamanho = foto.Length
+                };
+
+                var resultado = await _grupoService.AtualizarFotoGrupoAsync(grupoId, usuarioIdLogado, fotoDto);
+                return OkResponse(resultado, "Foto do grupo atualizada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
             }
         }
     }
