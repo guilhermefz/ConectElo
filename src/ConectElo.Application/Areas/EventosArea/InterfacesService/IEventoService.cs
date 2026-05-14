@@ -1,4 +1,5 @@
 ﻿using ConectElo.Application.Areas.EventosArea.DTOs;
+using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
 
 namespace ConectElo.Application.Areas.EventosArea.InterfacesService
 {
@@ -8,5 +9,8 @@ namespace ConectElo.Application.Areas.EventosArea.InterfacesService
         Task<CriarEventoDto> CriarEvento(CriarEventoDto dto);
         Task ExcluirEvento (Guid id);
         Task<EditarEventoDto> EditarEvento(EditarEventoDto dto);
+        Task<List<ExibirEventoDto>> ListarPorGrupo(Guid grupoId);
+        Task<ExibirAniversarioDto> CriarAniversario(CriarAniversarioDto dto, Guid criadorId);
+        Task<ExibirAmigoSecretoDto> CriarAmigoSecreto(CriarAmigoSecretoDto dto, Guid criadorId);
     }
 }

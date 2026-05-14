@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using ConectElo.Application.Areas.EventosArea.DTOs;
 using ConectElo.Application.Areas.EventosArea.InterfacesService;
+using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
+using ConectElo.Domain.Areas.Dinamicas.Entities;
 using ConectElo.Domain.Areas.Eventos.Entities;
+using ConectElo.Domain.Areas.Eventos.Enuns;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
 using ConectElo.Domain.Exceptions;
 
@@ -28,6 +31,60 @@ namespace ConectElo.Application.Areas.EventosArea.Services
             return _mapper.Map<ExibirEventoDto>(evento);
         }
 
+        public async Task<ExibirAmigoSecretoDto> CriarAmigoSecreto(CriarAmigoSecretoDto dto, Guid criadorId)
+        {
+            var evento = new AmigoSecretoEvento
+            {
+                Titulo = dto.Titulo,
+                Descricao = dto.Descricao,
+                DataInicio = dto.DataInicio,
+                Localizacao = dto.Localizacao,
+                GrupoId = dto.GrupoId,
+                Criador = criadorId,
+                Status = StatusEvento.Iniciado,
+                TipoEvento = TipoEventoEnum.AmigoSecreto,
+                Valor = dto.ValorMinimo,
+                DataSorteio = dto.DataSorteio,
+                Sorteado = false
+            };
+
+            await _eventoRepository.Inserir(evento);
+            return _mapper.Map<ExibirAmigoSecretoDto>(evento);
+        }
+
+        public async Task<ExibirAniversarioDto> CriarAniversario(CriarAniversarioDto dto, Guid criadorId)
+        {
+            var evento = new AniversarioEvento
+            {
+                Titulo = dto.Titulo,
+                Descricao = dto.Descricao,
+                DataInicio = dto.DataInicio,
+                Localizacao = dto.Localizacao,
+                GrupoId = dto.GrupoId,
+                Criador = criadorId,
+                Status = StatusEvento.Iniciado,
+                TipoEvento = TipoEventoEnum.Aniversario,
+                NomeAniversariante = dto.NomeAniversariante,
+                Idade = dto.Idade
+            };
+
+            if (dto.ListaDesejos is not null)
+            {
+                evento.ListaDesejos = new ListaDesejos
+                {
+                    Titulo = dto.ListaDesejos.Titulo,
+                    Itens = dto.ListaDesejos.Itens.Select(i => new ItensListaDesejos
+                    {
+                        Descricao = i.Descricao,
+                        UrlReference = i.UrlReference ?? string.Empty
+                    }).ToList()
+                };
+            }
+
+            await _eventoRepository.Inserir(evento);
+            return _mapper.Map<ExibirAniversarioDto>(evento);
+        }
+
         public async Task<CriarEventoDto> CriarEvento(CriarEventoDto dto)
         {
             var evento = _mapper.Map<Evento>(dto);
@@ -52,6 +109,12 @@ namespace ConectElo.Application.Areas.EventosArea.Services
                 throw new NotFoundException("Não existe um evento correspondente ao id enviado.");
 
             await _eventoRepository.Excluir(evento);
+        }
+
+        public async Task<List<ExibirEventoDto>> ListarPorGrupo(Guid grupoId)
+        {
+            var eventos = await _eventoRepository.ListarPorGrupo(grupoId);
+            return _mapper.Map<List<ExibirEventoDto>>(eventos);
         }
     }
 }
