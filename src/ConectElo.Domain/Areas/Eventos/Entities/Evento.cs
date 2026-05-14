@@ -17,5 +17,6 @@ namespace ConectElo.Domain.Areas.Eventos.Entities
         public StatusEvento Status { get; set; }
         public TipoEventoEnum TipoEvento { get; set; }
         public Guid GrupoId { get; set; }
+        public virtual Grupo? Grupo { get; set; }
     }
 }
