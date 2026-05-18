@@ -1,10 +1,14 @@
 ﻿using ConectElo.API.Areas.Base.Controllers;
 using ConectElo.Application.Areas.EventosArea.DTOs;
 using ConectElo.Application.Areas.EventosArea.InterfacesService;
+using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ConectElo.API.Areas.Eventos
 {
+    [Authorize]
     [Route("api/Eventos")]
     [ApiController]
     public class EventosController : BaseController
@@ -14,6 +18,61 @@ namespace ConectElo.API.Areas.Eventos
         public EventosController(IEventoService eventoService, IWebHostEnvironment env) : base(env) 
         {
             _eventoService = eventoService;
+        }
+
+        [HttpPost("Aniversario")]
+        public async Task<IActionResult> CriarAniversario(CriarAniversarioDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequestResponse("Os dados não são válidos para a criação.");
+
+                var criadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+                var evento = await _eventoService.CriarAniversario(dto, criadorId);
+                return OkResponse(evento, "Evento criado com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpPost("AmigoSecreto")]
+        public async Task<IActionResult> CriarAmigoSecreto(CriarAmigoSecretoDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequestResponse("Os dados não são válidos para criação");
+
+                var criadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+                var evento = await _eventoService.CriarAmigoSecreto(dto, criadorId);
+                return OkResponse(evento, "Evento criado com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpGet("ListarPorGrupo/{grupoId}")]
+        public async Task<IActionResult> ListarPorGrupo(Guid grupoId)
+        {
+            try
+            {
+                if (grupoId == Guid.Empty)
+                    return BadRequestResponse("O Id do grupo não é válido.");
+
+                var eventos = await _eventoService.ListarPorGrupo(grupoId);
+                return OkResponse(eventos, "Eventos listados com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
         }
 
         [HttpPost("Salvar")]

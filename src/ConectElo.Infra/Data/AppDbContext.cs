@@ -42,6 +42,12 @@ namespace ConectElo.Infra.Data
             modelBuilder.Entity<MembrosGrupo>()
                 .HasIndex(m => m.UsuarioId)
                 .HasDatabaseName("IX_MembrosGrupo_UsuarioId");
+
+            modelBuilder.Entity<Grupo>()
+                .HasIndex(g => g.CodigoConvite)
+                .IsUnique()
+                .HasFilter("\"CodigoConvite\" IS NOT NULL")
+                .HasDatabaseName("IX_Grupos_CodigoConvite");
         }
     }
 }

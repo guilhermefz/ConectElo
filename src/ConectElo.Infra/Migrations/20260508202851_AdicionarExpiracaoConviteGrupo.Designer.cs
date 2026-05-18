@@ -3,6 +3,7 @@ using System;
 using ConectElo.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ConectElo.Infra.Data
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508202851_AdicionarExpiracaoConviteGrupo")]
+    partial class AdicionarExpiracaoConviteGrupo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,6 +89,33 @@ namespace ConectElo.Infra.Data
                     b.HasKey("Id");
 
                     b.ToTable("Notificacoes");
+                });
+
+            modelBuilder.Entity("ConectElo.Domain.Areas.Dinamicas.Entities.AmigoSecretoEvento", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("DataSorteio")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EventoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResultadoSorteio")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Sorteado")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("Valor")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AmigoSecretoEventos");
                 });
 
             modelBuilder.Entity("ConectElo.Domain.Areas.Dinamicas.Entities.ItensListaDesejos", b =>
@@ -187,11 +217,6 @@ namespace ConectElo.Infra.Data
                     b.Property<string>("Descricao")
                         .HasColumnType("text");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("character varying(21)");
-
                     b.Property<Guid>("GrupoId")
                         .HasColumnType("uuid");
 
@@ -212,13 +237,7 @@ namespace ConectElo.Infra.Data
 
                     b.HasIndex("CriadorEventoId");
 
-                    b.HasIndex("GrupoId");
-
                     b.ToTable("Eventos");
-
-                    b.HasDiscriminator().HasValue("Evento");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("ConectElo.Domain.Areas.Geral.Entities.BanimentoGrupo", b =>
@@ -681,26 +700,6 @@ namespace ConectElo.Infra.Data
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ConectElo.Domain.Areas.Dinamicas.Entities.AmigoSecretoEvento", b =>
-                {
-                    b.HasBaseType("ConectElo.Domain.Areas.Eventos.Entities.Evento");
-
-                    b.Property<DateTime>("DataSorteio")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ResultadoSorteio")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Sorteado")
-                        .HasColumnType("boolean");
-
-                    b.Property<double>("Valor")
-                        .HasColumnType("double precision");
-
-                    b.HasDiscriminator().HasValue("AmigoSecretoEvento");
-                });
-
             modelBuilder.Entity("ConectElo.Domain.Areas.Comunicacao.Entities.Mensagem", b =>
                 {
                     b.HasOne("ConectElo.Domain.Areas.Social.Entities.Usuario", "Autor")
@@ -756,15 +755,7 @@ namespace ConectElo.Infra.Data
                         .WithMany()
                         .HasForeignKey("CriadorEventoId");
 
-                    b.HasOne("ConectElo.Domain.Areas.Social.Entities.Grupo", "Grupo")
-                        .WithMany()
-                        .HasForeignKey("GrupoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("CriadorEvento");
-
-                    b.Navigation("Grupo");
                 });
 
             modelBuilder.Entity("ConectElo.Domain.Areas.Geral.Entities.BanimentoGrupo", b =>

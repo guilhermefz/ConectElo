@@ -35,5 +35,21 @@ namespace ConectElo.Infra.Areas.Social.Repositories
 
             return $"/uploads/fotos-perfil/{nomeFinal}";
         }
+
+        public async Task<string> SalvarFotoGrupoAsync(Stream conteudo, string nomeArquivo, long tamanho, Guid grupoId)
+        {
+            var extensao = Path.GetExtension(nomeArquivo).ToLowerInvariant();
+            var nomeFinal = $"{grupoId}{extensao}";
+            var pasta = Path.Combine(_env.ContentRootPath, "uploads", "fotos-grupo");
+
+            Directory.CreateDirectory(pasta);
+
+            var caminhoCompleto = Path.Combine(pasta, nomeFinal);
+
+            await using var stream = new FileStream(caminhoCompleto, FileMode.Create);
+            await conteudo.CopyToAsync(stream);
+
+            return $"/uploads/fotos-grupo/{nomeFinal}";
+        }
     }
 }

@@ -14,7 +14,8 @@ namespace ConectElo.Application.Areas.Social.Mappers
 
             CreateMap<EditarGrupoDto, Grupo>().ReverseMap();
 
-            CreateMap<Grupo, GrupoExibicaoDto>();
+            CreateMap<Grupo, GrupoExibicaoDto>()
+                .ForMember(dest => dest.ImgGrupo, opt => opt.MapFrom(src => src.ImgGrupo));
         }
     }
 }

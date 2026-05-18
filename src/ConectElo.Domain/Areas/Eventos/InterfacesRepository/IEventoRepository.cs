@@ -5,5 +5,6 @@ namespace ConectElo.Domain.Areas.Eventos.InterfacesRepository
 {
     public interface IEventoRepository : IGenericRepository<Evento>
     {
+        Task<List<Evento>> ListarPorGrupo(Guid grupoId);
     }
 }

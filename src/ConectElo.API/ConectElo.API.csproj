@@ -16,6 +16,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.OpenApi" Version="1.6.21" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.12.50" />
+	<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
