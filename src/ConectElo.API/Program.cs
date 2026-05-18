@@ -60,7 +60,7 @@ namespace ConectElo.API
             {
                 options.AddDocumentTransformer((document, context, ct) =>
                 {
-                    document.Servers = [new OpenApiServer { Url = "http://localhost:5000" }];
+                    document.Servers = [new OpenApiServer { Url = "https://conectelo-api.onrender.com" }];
                     document.Components ??= new();
                     document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
                     {
@@ -204,15 +204,15 @@ namespace ConectElo.API
             });
 
 
-            app.MapControllers();
-
-            app.MapIdentityApi<Usuario>();
 
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.Database.Migrate();
             }
+
+            app.MapControllers();
+            app.MapIdentityApi<Usuario>();
 
             app.Run();
         }
