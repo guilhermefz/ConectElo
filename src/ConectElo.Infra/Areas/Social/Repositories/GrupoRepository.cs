@@ -32,5 +32,13 @@ namespace ConectElo.Infra.Areas.Social.Repositories
                 .Where(g => g.Membros.Any(m => m.UsuarioId == usuarioId))
                 .ToListAsync();
         }
+
+        public async Task<Grupo?> BuscarPorCodigoConvite(string codigo)
+        {
+            return await _context.Grupos
+                .Include(g => g.Membros)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(g => g.CodigoConvite == codigo);
+        }
     }
 }

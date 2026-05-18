@@ -1,15 +1,21 @@
 using AutoMapper;
+using ConectElo.API.Areas.Comunicacao.Hubs;
 using ConectElo.Application.Areas.Autenticacao.InterfacesService;
 using ConectElo.Application.Areas.Autenticacao.Services;
+using ConectElo.Application.Areas.Comunicacao.InterfacesService;
+using ConectElo.Application.Areas.Comunicacao.Mappers;
+using ConectElo.Application.Areas.Comunicacao.Services;
 using ConectElo.Application.Areas.EventosArea.InterfacesService;
 using ConectElo.Application.Areas.EventosArea.Mappers;
 using ConectElo.Application.Areas.EventosArea.Services;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Application.Areas.Social.Mappers;
 using ConectElo.Application.Areas.Social.Services;
+using ConectElo.Domain.Areas.Comunicacao.InterfacesRepository;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
 using ConectElo.Domain.Areas.Social.Entities;
 using ConectElo.Domain.Areas.Social.InterfacesRepository;
+using ConectElo.Infra.Areas.Comunicacao.Repositories;
 using ConectElo.Infra.Areas.Eventos.Repositories;
 using ConectElo.Infra.Areas.Social.Repositories;
 using ConectElo.Infra.Data;
@@ -42,6 +48,7 @@ namespace ConectElo.API
                     cfg.AddProfile<MembroGrupoProfile>();
                     cfg.AddProfile<PostagemProfile>();
                     cfg.AddProfile<EventoProfile>();
+                    cfg.AddProfile<MensagemProfile>();
                 },
                 NullLoggerFactory.Instance
             );
@@ -103,6 +110,20 @@ namespace ConectElo.API
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
                 };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/chat"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             builder.Services.AddAuthorization();
@@ -128,12 +149,17 @@ namespace ConectElo.API
             builder.Services.AddScoped<IFeedService, FeedService>();
             builder.Services.AddScoped<IArquivoRepository, ArquivoRepository>();
             builder.Services.AddScoped<IArquivoService, ArquivoService>();
+            builder.Services.AddScoped<IMensagemRepository, MensagemRepository>();
+            builder.Services.AddScoped<IMensagemService, MensagemService>();
+
+            builder.Services.AddSignalR();
 
             builder.Services.AddCors(options => {
                 options.AddPolicy("Default", policy => {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins("http://localhost:5173")
                           .AllowAnyHeader()
-                          .AllowAnyMethod();
+                          .AllowAnyMethod()
+                          .AllowCredentials();
                 });
             });
 
@@ -152,6 +178,7 @@ namespace ConectElo.API
             app.UseAuthentication();
             app.UseCors("Default");
             app.UseAuthorization();
+            app.MapHub<ChatHub>("/hubs/chat");
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(uploadsPath),

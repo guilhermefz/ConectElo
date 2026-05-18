@@ -33,6 +33,23 @@ namespace ConectElo.Application.Areas.Social.Services
             );
         }
 
+        public async Task<string> SalvarFotoGrupoAsync(AtualizarFotoDto arquivo, Guid grupoId)
+        {
+            if (arquivo.Tamanho > TamanhoMaximoBytes)
+                throw new BusinessException("A foto deve ter no máximo 5 MB");
+
+            var extensao = Path.GetExtension(arquivo.NomeArquivo).ToLowerInvariant();
+            if (!_extensoesPermitidas.Contains(extensao))
+                throw new BusinessException("Formato não permitido. Use JPG, PNG ou WebP.");
+
+            return await _arquivoRepository.SalvarFotoGrupoAsync(
+                arquivo.Conteudo,
+                arquivo.NomeArquivo,
+                arquivo.Tamanho,
+                grupoId
+            );
+        }
+
         public void DeletarArquivo(string caminhoRelativo)
         {
            _arquivoRepository.Deletar(caminhoRelativo);
