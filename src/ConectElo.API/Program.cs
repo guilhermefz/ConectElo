@@ -140,11 +140,11 @@ namespace ConectElo.API
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
+            //if (app.Environment.IsDevelopment())
+            //{
                 app.MapOpenApi();
                 app.MapScalarApiReference();
-            }
+            //}
 
             var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
             Directory.CreateDirectory(uploadsPath);
