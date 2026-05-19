@@ -156,7 +156,8 @@ namespace ConectElo.API
 
             builder.Services.AddCors(options => {
                 options.AddPolicy("Default", policy => {
-                    policy.WithOrigins("http://localhost:5173")
+                    policy.WithOrigins("http://localhost:5173",
+                                       "https://conect-elo-web.vercel.app")
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
