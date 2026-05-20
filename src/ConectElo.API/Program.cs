@@ -60,7 +60,7 @@ namespace ConectElo.API
             {
                 options.AddDocumentTransformer((document, context, ct) =>
                 {
-                    document.Servers = [new OpenApiServer { Url = "https://conectelo-api.onrender.com" }];
+                    document.Servers = [new OpenApiServer { Url = "http://localhost:5000" }];
                     document.Components ??= new();
                     document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
                     {
