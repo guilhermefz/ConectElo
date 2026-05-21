@@ -116,5 +116,11 @@ namespace ConectElo.Application.Areas.EventosArea.Services
             var eventos = await _eventoRepository.ListarPorGrupo(grupoId);
             return _mapper.Map<List<ExibirEventoDto>>(eventos);
         }
+
+        public async Task<List<ExibirEventoDto>> ListarPorUsuario(Guid usuarioId)
+        {
+            var eventos = await _eventoRepository.ListarPorUsuario(usuarioId);
+            return _mapper.Map<List<ExibirEventoDto>>(eventos);
+        }
     }
 }

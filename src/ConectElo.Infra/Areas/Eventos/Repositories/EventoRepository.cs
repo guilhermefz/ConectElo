@@ -22,5 +22,13 @@ namespace ConectElo.Infra.Areas.Eventos.Repositories
                 .OrderByDescending(e => e.DataCriacao)
                 .ToListAsync();
         }
+
+        public async Task<List<Evento>> ListarPorUsuario(Guid usuarioId)
+        {
+            return await _context.Set<Evento>()
+                .Where(e => e.Criador == usuarioId && e.DataDelecao == null)
+                .OrderByDescending(e => e.DataCriacao)
+                .ToListAsync();
+        }
     }
 }
