@@ -1,55 +1,70 @@
-﻿using ConectElo.Domain.Areas.Social.InterfacesRepository;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using Microsoft.AspNetCore.Hosting;
 
 namespace ConectElo.Infra.Areas.Social.Repositories
 {
     public class ArquivoRepository : IArquivoRepository
     {
-        private readonly IWebHostEnvironment _env;
+        private readonly Cloudinary _cloudinary;
 
-        public ArquivoRepository(IWebHostEnvironment env)
+        public ArquivoRepository(Cloudinary cloudinary)
         {
-            _env = env;
+            _cloudinary = cloudinary;
         }
 
-        public void Deletar(string caminhoRelativo)
+        public void Deletar(string urlCloudinary)
         {
-            var caminhoCompleto = Path.Combine(_env.ContentRootPath, caminhoRelativo.TrimStart('/'));
+            var publicId = ExtrairPublicId(urlCloudinary);
+            if (publicId is null) return;
 
-            if (File.Exists(caminhoCompleto))
-                File.Delete(caminhoCompleto);
+            _cloudinary.Destroy(new DeletionParams(publicId));
         }
 
         public async Task<string> SalvarFotoPerfilAsync(Stream conteudo, string nomeArquivo, long tamanho, Guid usuarioId)
         {
-            var extensao = Path.GetExtension(nomeArquivo).ToLowerInvariant();
-            var nomeFinal = $"{usuarioId}{extensao}";
-            var pasta = Path.Combine(_env.ContentRootPath, "uploads", "fotos-perfil");
+            var updloadParams = new ImageUploadParams
+            {
+                File = new FileDescription(nomeArquivo, conteudo),
+                PublicId = $"fotos-perfil/{usuarioId}",
+                Overwrite = true
+            };
 
-            Directory.CreateDirectory(pasta);
-
-            var caminhoCompleto = Path.Combine(pasta, nomeFinal);
-
-            await using var stream = new FileStream(caminhoCompleto, FileMode.Create);
-            await conteudo.CopyToAsync(stream);
-
-            return $"/uploads/fotos-perfil/{nomeFinal}";
+            var resultado = await _cloudinary.UploadAsync(updloadParams);
+            return resultado.SecureUrl.ToString();
         }
 
         public async Task<string> SalvarFotoGrupoAsync(Stream conteudo, string nomeArquivo, long tamanho, Guid grupoId)
         {
-            var extensao = Path.GetExtension(nomeArquivo).ToLowerInvariant();
-            var nomeFinal = $"{grupoId}{extensao}";
-            var pasta = Path.Combine(_env.ContentRootPath, "uploads", "fotos-grupo");
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(nomeArquivo, conteudo),
+                PublicId = $"fotos-grupo/{grupoId}",
+                Overwrite = true
+            };
 
-            Directory.CreateDirectory(pasta);
+            var resultado = await _cloudinary.UploadAsync(uploadParams);
+            return resultado.SecureUrl.ToString();
+        }
 
-            var caminhoCompleto = Path.Combine(pasta, nomeFinal);
+        private static string? ExtrairPublicId(string url)
+        {
+            // https://res.cloudinary.com/{cloud}/image/upload/v{version}/{public_id}.{ext}
+            const string marcador = "/upload";
+            var indice = url.IndexOf(marcador, StringComparison.Ordinal);
+            if (indice < 0) return null;
 
-            await using var stream = new FileStream(caminhoCompleto, FileMode.Create);
-            await conteudo.CopyToAsync(stream);
+            var parte = url[(indice + marcador.Length)..];
 
-            return $"/uploads/fotos-grupo/{nomeFinal}";
+            // remove prefixo de versão (v1234567890/)
+            var primeirasBarra = parte.IndexOf('/');
+            if (primeirasBarra > 0 && parte[0] == 'v' && parte[1..primeirasBarra].All(char.IsDigit))
+                parte = parte[(primeirasBarra + 1)..];
+
+            // remove extensão
+            var ponto = parte.LastIndexOf('.');
+            return ponto >= 0 ? parte[..ponto] : parte;
         }
     }
 }
