@@ -142,5 +142,20 @@ namespace ConectElo.API.Areas.Eventos
                 return ErrorResponse(ex);
             }
         }
+
+        [HttpGet("ListarDoUsuario")]
+        public async Task<IActionResult> ListarDoUsuario()
+        {
+            try
+            {
+                var usuarioId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var eventos = await _eventoService.ListarPorUsuario(usuarioId);
+                return OkResponse(eventos, "Eventos listados com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
     }
 }
