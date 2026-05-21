@@ -152,6 +152,11 @@ namespace ConectElo.API
             builder.Services.AddScoped<IMensagemRepository, MensagemRepository>();
             builder.Services.AddScoped<IMensagemService, MensagemService>();
 
+            builder.Services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+            });
+
             var cloudinaryAccount = new Account(
                 builder.Configuration["Cloudinary:CloudName"],
                 builder.Configuration["Cloudinary:ApiKey"],
@@ -167,7 +172,8 @@ namespace ConectElo.API
                                        "https://conect-elo-web.vercel.app")
                           .AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowCredentials();
+                          .AllowCredentials()
+                          .SetPreflightMaxAge(TimeSpan.FromHours(24));
                 });
             });
 
@@ -179,6 +185,7 @@ namespace ConectElo.API
                 app.MapScalarApiReference();
             }
 
+            app.UseResponseCompression();
             app.UseAuthentication();
             app.UseCors("Default");
             app.UseAuthorization();
