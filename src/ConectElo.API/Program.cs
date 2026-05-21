@@ -1,4 +1,5 @@
 using AutoMapper;
+using CloudinaryDotNet;
 using ConectElo.API.Areas.Comunicacao.Hubs;
 using ConectElo.Application.Areas.Autenticacao.InterfacesService;
 using ConectElo.Application.Areas.Autenticacao.Services;
@@ -21,7 +22,6 @@ using ConectElo.Infra.Areas.Social.Repositories;
 using ConectElo.Infra.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -152,6 +152,13 @@ namespace ConectElo.API
             builder.Services.AddScoped<IMensagemRepository, MensagemRepository>();
             builder.Services.AddScoped<IMensagemService, MensagemService>();
 
+            var cloudinaryAccount = new Account(
+                builder.Configuration["Cloudinary:CloudName"],
+                builder.Configuration["Cloudinary:ApiKey"],
+                builder.Configuration["Cloudinary:ApiSecret"]
+            );
+            builder.Services.AddSingleton(new Cloudinary(cloudinaryAccount));
+
             builder.Services.AddSignalR();
 
             builder.Services.AddCors(options => {
@@ -172,18 +179,10 @@ namespace ConectElo.API
                 app.MapScalarApiReference();
             }
 
-        var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
-            Directory.CreateDirectory(uploadsPath);
-
             app.UseAuthentication();
             app.UseCors("Default");
             app.UseAuthorization();
             app.MapHub<ChatHub>("/hubs/chat");
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(uploadsPath),
-                RequestPath = "/uploads"
-            });
 
             app.Use(async (context, next) =>
             {
