@@ -6,6 +6,7 @@ using ConectElo.Domain.Areas.Dinamicas.Entities;
 using ConectElo.Domain.Areas.Eventos.Entities;
 using ConectElo.Domain.Areas.Eventos.Enuns;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
+using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using ConectElo.Domain.Exceptions;
 
 namespace ConectElo.Application.Areas.EventosArea.Services
@@ -13,12 +14,29 @@ namespace ConectElo.Application.Areas.EventosArea.Services
     public class EventoService : IEventoService
     {
         private readonly IEventoRepository _eventoRepository;
+        private readonly IArquivoRepository _arquivoRepository;
         private readonly IMapper _mapper;
 
-        public EventoService(IEventoRepository eventoRepository, IMapper mapper)
+        public EventoService(IEventoRepository eventoRepository, IMapper mapper, IArquivoRepository arquivoRepository)
         {
             _eventoRepository = eventoRepository;
             _mapper = mapper;
+            _arquivoRepository = arquivoRepository;
+        }
+
+        public async Task<string> AtualizarFotoCapa(Guid eventoId, Stream conteudo, string nomeArquivo, long tamanho)
+        {
+            var evento = await _eventoRepository.SelecionarPorId(eventoId);
+
+            if (evento == null)
+                throw new NotFoundException("Evento não encontrado!");
+
+            var url = await _arquivoRepository.SalvarFotoCapaEventoASync(conteudo, nomeArquivo, tamanho, eventoId);
+
+            evento.FotoCapaUrl = url;
+            await _eventoRepository.Atualizar(evento);
+
+            return url;
         }
 
         public async Task<ExibirEventoDto> BuscarEventoPorId(Guid id)
@@ -28,7 +46,12 @@ namespace ConectElo.Application.Areas.EventosArea.Services
             if (evento is null)
                 throw new NotFoundException("Evento não encontrado.");
 
-            return _mapper.Map<ExibirEventoDto>(evento);
+            return evento switch
+            {
+                AniversarioEvento aniversario => _mapper.Map<ExibirAniversarioDto>(aniversario),
+                AmigoSecretoEvento amigoSecreto => _mapper.Map<ExibirAmigoSecretoDto>(amigoSecreto),
+                _ => _mapper.Map<ExibirEventoDto>(evento)
+            };
         }
 
         public async Task<ExibirAmigoSecretoDto> CriarAmigoSecreto(CriarAmigoSecretoDto dto, Guid criadorId)

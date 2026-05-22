@@ -1,4 +1,5 @@
-﻿using ConectElo.Domain.Areas.Eventos.Entities;
+﻿using ConectElo.Domain.Areas.Dinamicas.Entities;
+using ConectElo.Domain.Areas.Eventos.Entities;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
 using ConectElo.Infra.Areas.Base;
 using ConectElo.Infra.Data;
@@ -27,8 +28,25 @@ namespace ConectElo.Infra.Areas.Eventos.Repositories
         {
             return await _context.Set<Evento>()
                 .Where(e => e.Criador == usuarioId && e.DataDelecao == null)
+                .Include(e => e.CriadorEvento)
                 .OrderByDescending(e => e.DataCriacao)
                 .ToListAsync();
+        }
+
+        public override async Task<Evento?> SelecionarPorId(Guid id)
+        {
+            var aniversario = await _context.Set<AniversarioEvento>()
+                .Include(a => a.CriadorEvento)
+                .Include(a => a.ListaDesejos!)
+                    .ThenInclude(l => l.Itens)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (aniversario is not null)
+                return aniversario;
+
+            return await _context.Set<Evento>()
+                .Include(e => e.CriadorEvento)
+                .FirstOrDefaultAsync(e => e.Id == id);
         }
     }
 }

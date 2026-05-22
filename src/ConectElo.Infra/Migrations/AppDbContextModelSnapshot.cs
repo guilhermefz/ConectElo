@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ConectElo.Infra.Data
+namespace ConectElo.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -101,7 +101,7 @@ namespace ConectElo.Infra.Data
                     b.Property<Guid>("ListaDesejosId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ReservadoPorId")
+                    b.Property<Guid?>("ReservadoPorId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("UrlReference")
@@ -172,9 +172,6 @@ namespace ConectElo.Infra.Data
                     b.Property<Guid>("Criador")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CriadorEventoId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("timestamp with time zone");
 
@@ -191,6 +188,9 @@ namespace ConectElo.Infra.Data
                         .IsRequired()
                         .HasMaxLength(21)
                         .HasColumnType("character varying(21)");
+
+                    b.Property<string>("FotoCapaUrl")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("GrupoId")
                         .HasColumnType("uuid");
@@ -210,7 +210,7 @@ namespace ConectElo.Infra.Data
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CriadorEventoId");
+                    b.HasIndex("Criador");
 
                     b.HasIndex("GrupoId");
 
@@ -701,6 +701,25 @@ namespace ConectElo.Infra.Data
                     b.HasDiscriminator().HasValue("AmigoSecretoEvento");
                 });
 
+            modelBuilder.Entity("ConectElo.Domain.Areas.Dinamicas.Entities.AniversarioEvento", b =>
+                {
+                    b.HasBaseType("ConectElo.Domain.Areas.Eventos.Entities.Evento");
+
+                    b.Property<int?>("Idade")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ListaDesejosId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NomeAniversariante")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasIndex("ListaDesejosId");
+
+                    b.HasDiscriminator().HasValue("AniversarioEvento");
+                });
+
             modelBuilder.Entity("ConectElo.Domain.Areas.Comunicacao.Entities.Mensagem", b =>
                 {
                     b.HasOne("ConectElo.Domain.Areas.Social.Entities.Usuario", "Autor")
@@ -722,9 +741,7 @@ namespace ConectElo.Infra.Data
 
                     b.HasOne("ConectElo.Domain.Areas.Social.Entities.Usuario", "ReservadoPor")
                         .WithMany()
-                        .HasForeignKey("ReservadoPorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ReservadoPorId");
 
                     b.Navigation("ListaDesejos");
 
@@ -754,7 +771,7 @@ namespace ConectElo.Infra.Data
                 {
                     b.HasOne("ConectElo.Domain.Areas.Social.Entities.Usuario", "CriadorEvento")
                         .WithMany()
-                        .HasForeignKey("CriadorEventoId");
+                        .HasForeignKey("Criador");
 
                     b.HasOne("ConectElo.Domain.Areas.Social.Entities.Grupo", "Grupo")
                         .WithMany()
@@ -903,6 +920,15 @@ namespace ConectElo.Infra.Data
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ConectElo.Domain.Areas.Dinamicas.Entities.AniversarioEvento", b =>
+                {
+                    b.HasOne("ConectElo.Domain.Areas.Dinamicas.Entities.ListaDesejos", "ListaDesejos")
+                        .WithMany()
+                        .HasForeignKey("ListaDesejosId");
+
+                    b.Navigation("ListaDesejos");
                 });
 
             modelBuilder.Entity("ConectElo.Domain.Areas.Dinamicas.Entities.ListaDesejos", b =>

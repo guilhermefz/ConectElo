@@ -12,24 +12,25 @@ namespace ConectElo.Infra.Data
     public class AppDbContext : IdentityDbContext<Usuario, IdentityRole<Guid>, Guid>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-        
-            public DbSet<Usuario> Usuarios { get; set; }
-            public DbSet<Mensagem> Mensagens { get; set; }
-            public DbSet<Notificacoes> Notificacoes { get; set; }
-            public DbSet<AmigoSecretoEvento> AmigoSecretoEventos { get; set; }
-            public DbSet<ItensListaDesejos> ItensListaDesejos { get; set; }
-            public DbSet<ListaDesejos> ListaDesejos { get; set; }
-            public DbSet<ConviteEvento> ConviteEventos { get; set; }
-            public DbSet<Evento> Eventos { get; set; }
-            public DbSet<BanimentoGrupo> BanimentoGrupo { get; set; }
-            public DbSet<ConfirmacaoEvento> ConfirmacaoEventos { get; set; }
-            public DbSet<SolicitacaoEntrada> SolicitacaoEntrada {  get; set; }
-            public DbSet<GaleriaFotos> GaleriaFotos { get; set; }
-            public DbSet<Grupo> Grupos { get; set; }
-            public DbSet<MembrosGrupo> membrosGrupos { get; set; }
-            public DbSet<Mural> Mural { get; set; }
-            public DbSet<Postagens> Postagens { get; set; }
-        
+
+        public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<Mensagem> Mensagens { get; set; }
+        public DbSet<Notificacoes> Notificacoes { get; set; }
+        public DbSet<AmigoSecretoEvento> AmigoSecretoEventos { get; set; }
+        public DbSet<AniversarioEvento> AniversarioEventos { get; set; }
+        public DbSet<ItensListaDesejos> ItensListaDesejos { get; set; }
+        public DbSet<ListaDesejos> ListaDesejos { get; set; }
+        public DbSet<ConviteEvento> ConviteEventos { get; set; }
+        public DbSet<Evento> Eventos { get; set; }
+        public DbSet<BanimentoGrupo> BanimentoGrupo { get; set; }
+        public DbSet<ConfirmacaoEvento> ConfirmacaoEventos { get; set; }
+        public DbSet<SolicitacaoEntrada> SolicitacaoEntrada {  get; set; }
+        public DbSet<GaleriaFotos> GaleriaFotos { get; set; }
+        public DbSet<Grupo> Grupos { get; set; }
+        public DbSet<MembrosGrupo> membrosGrupos { get; set; }
+        public DbSet<Mural> Mural { get; set; }
+        public DbSet<Postagens> Postagens { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,6 +49,12 @@ namespace ConectElo.Infra.Data
                 .IsUnique()
                 .HasFilter("\"CodigoConvite\" IS NOT NULL")
                 .HasDatabaseName("IX_Grupos_CodigoConvite");
+
+            modelBuilder.Entity<Evento>()
+                .HasOne(e => e.CriadorEvento)
+                .WithMany()
+                .HasForeignKey(e => e.Criador)
+                .IsRequired(false);
         }
     }
 }

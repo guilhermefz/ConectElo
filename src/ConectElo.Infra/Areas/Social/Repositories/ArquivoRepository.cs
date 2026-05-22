@@ -48,6 +48,19 @@ namespace ConectElo.Infra.Areas.Social.Repositories
             return resultado.SecureUrl.ToString();
         }
 
+        public async Task<string> SalvarFotoCapaEventoASync(Stream conteudo, string nomeArquivo, long tamanho, Guid eventoId)
+        {
+            var uploadsParams = new ImageUploadParams
+            {
+                File = new FileDescription(nomeArquivo, conteudo),
+                PublicId = $"fotos-capa-evento/{eventoId}",
+                Overwrite = true
+            };
+
+            var resultado = await _cloudinary.UploadAsync(uploadsParams);
+            return resultado.SecureUrl.ToString();
+        }
+
         private static string? ExtrairPublicId(string url)
         {
             // https://res.cloudinary.com/{cloud}/image/upload/v{version}/{public_id}.{ext}

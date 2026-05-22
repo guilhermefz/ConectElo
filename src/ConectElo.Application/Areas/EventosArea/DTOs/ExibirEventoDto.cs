@@ -15,5 +15,7 @@ namespace ConectElo.Application.Areas.EventosArea.DTOs
         public StatusEvento Status { get; set; }
         public TipoEventoEnum TipoEvento { get; set; }
         public Guid GrupoId { get; set; }
+        public string? FotoCapaUrl { get; set; }
+        public string? CriadorNome { get; set; }
     }
 }

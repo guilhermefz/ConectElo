@@ -1,6 +1,8 @@
-﻿namespace ConectElo.Application.Areas.Social.DTOs.EventosDTO
+﻿using ConectElo.Application.Areas.EventosArea.DTOs;
+
+namespace ConectElo.Application.Areas.Social.DTOs.EventosDTO
 {
-    public class ExibirAmigoSecretoDto
+    public class ExibirAmigoSecretoDto : ExibirEventoDto
     {
         public double ValorMinimo { get; set; }
         public DateTime DataSorteio { get; set; }

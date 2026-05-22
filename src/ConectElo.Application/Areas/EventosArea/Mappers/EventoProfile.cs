@@ -10,11 +10,18 @@ namespace ConectElo.Application.Areas.EventosArea.Mappers
     {
         public EventoProfile()
         {
-            CreateMap<ExibirEventoDto, Evento>().ReverseMap();
+            CreateMap<Evento, ExibirEventoDto>()
+                .Include<AniversarioEvento, ExibirAniversarioDto>()
+                .Include<AmigoSecretoEvento, ExibirAmigoSecretoDto>()
+                .ForMember(dest => dest.CriadorNome, opt => opt.MapFrom(src => src.CriadorEvento != null ? src.CriadorEvento.Nome : null));
+
             CreateMap<CriarEventoDto, Evento>().ReverseMap();
             CreateMap<EditarEventoDto, Evento>().ReverseMap();
 
-            CreateMap<AniversarioEvento, ExibirAniversarioDto>().ReverseMap();
+            CreateMap<AniversarioEvento, ExibirAniversarioDto>()
+                .ForMember(dest => dest.CriadorNome, opt => opt.MapFrom(src => src.CriadorEvento != null ? src.CriadorEvento.Nome : null))
+                .ReverseMap();
+
             CreateMap<AmigoSecretoEvento, ExibirAmigoSecretoDto>().ReverseMap();
             CreateMap<ListaDesejos, ExibirListaDesejosDto>().ReverseMap();
             CreateMap<ItensListaDesejos, ExibirItemListaDesejosDto>().ReverseMap();

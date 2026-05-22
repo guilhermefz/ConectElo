@@ -13,5 +13,6 @@ namespace ConectElo.Application.Areas.EventosArea.InterfacesService
         Task<ExibirAniversarioDto> CriarAniversario(CriarAniversarioDto dto, Guid criadorId);
         Task<ExibirAmigoSecretoDto> CriarAmigoSecreto(CriarAmigoSecretoDto dto, Guid criadorId);
         Task<List<ExibirEventoDto>> ListarPorUsuario(Guid usuarioId);
+        Task<string> AtualizarFotoCapa(Guid eventoId, Stream conteudo, string nomeArquivo, long tamanho);
     }
 }

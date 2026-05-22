@@ -8,8 +8,8 @@ namespace ConectElo.Domain.Areas.Dinamicas.Entities
         public string Descricao { get; set; }
         public string UrlReference { get; set; }
         public Guid ListaDesejosId { get; set; }
-        public virtual ListaDesejos ListaDesejos { get; set; } = null;
-        public Guid ReservadoPorId { get; set; }
+        public virtual ListaDesejos? ListaDesejos { get; set; } = null;
+        public Guid? ReservadoPorId { get; set; }
         public virtual Usuario? ReservadoPor { get; set; }
     }
 }
