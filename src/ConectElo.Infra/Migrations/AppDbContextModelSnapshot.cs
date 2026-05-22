@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ConectElo.Infra.Data
+namespace ConectElo.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -101,7 +101,7 @@ namespace ConectElo.Infra.Data
                     b.Property<Guid>("ListaDesejosId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ReservadoPorId")
+                    b.Property<Guid?>("ReservadoPorId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("UrlReference")
@@ -191,6 +191,9 @@ namespace ConectElo.Infra.Data
                         .IsRequired()
                         .HasMaxLength(21)
                         .HasColumnType("character varying(21)");
+
+                    b.Property<string>("FotoCapaUrl")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("GrupoId")
                         .HasColumnType("uuid");
@@ -741,9 +744,7 @@ namespace ConectElo.Infra.Data
 
                     b.HasOne("ConectElo.Domain.Areas.Social.Entities.Usuario", "ReservadoPor")
                         .WithMany()
-                        .HasForeignKey("ReservadoPorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ReservadoPorId");
 
                     b.Navigation("ListaDesejos");
 
