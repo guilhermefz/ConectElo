@@ -17,6 +17,7 @@ namespace ConectElo.Infra.Data
             public DbSet<Mensagem> Mensagens { get; set; }
             public DbSet<Notificacoes> Notificacoes { get; set; }
             public DbSet<AmigoSecretoEvento> AmigoSecretoEventos { get; set; }
+            public DbSet<AniversarioEvento> AniversarioEventos { get; set; }
             public DbSet<ItensListaDesejos> ItensListaDesejos { get; set; }
             public DbSet<ListaDesejos> ListaDesejos { get; set; }
             public DbSet<ConviteEvento> ConviteEventos { get; set; }
