@@ -118,7 +118,7 @@ namespace ConectElo.API.Areas.Eventos
                     return NotFoundResponse("O Id enviado não é válido.");
 
                 var evento = await _eventoService.BuscarEventoPorId(id);
-                return OkResponse(evento, "Evento buscado com sucesso.");
+                return OkResponse<object>(evento, "Evento buscado com sucesso.");
             }
             catch (Exception ex)
             {
@@ -151,6 +151,25 @@ namespace ConectElo.API.Areas.Eventos
                 var usuarioId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
                 var eventos = await _eventoService.ListarPorUsuario(usuarioId);
                 return OkResponse(eventos, "Eventos listados com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpPost("FotoCapa/{eventoId}")]
+        public async Task<IActionResult> AtualizarFotoCapa(Guid eventoId, IFormFile foto)
+        {
+            try
+            {
+                if (foto == null || foto.Length == 0)
+                    return BadRequest("Nenhuma foto enviada");
+
+                await using var stream = foto.OpenReadStream();
+                var url = await _eventoService.AtualizarFotoCapa(eventoId, stream, foto.FileName, foto.Length);
+
+                return OkResponse(url, "Foto de capa atualizada com sucesso");
             }
             catch (Exception ex)
             {
