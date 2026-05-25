@@ -16,5 +16,7 @@ namespace ConectElo.Application.Areas.EventosArea.InterfacesService
         Task<List<ExibirEventoDto>> ListarPorUsuario(Guid usuarioId);
         Task<string> AtualizarFotoCapa(Guid eventoId, Stream conteudo, string nomeArquivo, long tamanho);
         Task RegistrarParticipacao(Guid eventoId, Guid usuarioID, StatusConfirmacaoEventoEnum status);
+        Task<ExibirItemListaDesejosDto> SelecionarItem(Guid itemId, Guid usuarioId);
+        Task<ExibirItemListaDesejosDto> DeselecionarItem(Guid itemId, Guid usuarioId);
     }
 }

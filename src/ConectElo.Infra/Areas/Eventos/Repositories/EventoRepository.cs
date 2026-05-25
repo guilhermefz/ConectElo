@@ -41,6 +41,7 @@ namespace ConectElo.Infra.Areas.Eventos.Repositories
                 .Include(a => a.CriadorEvento)
                 .Include(a => a.ListaDesejos!)
                     .ThenInclude(l => l.Itens)
+                        .ThenInclude(i => i.ReservadoPor)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (aniversario is not null)

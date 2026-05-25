@@ -18,14 +18,16 @@ namespace ConectElo.Application.Areas.EventosArea.Services
         private readonly IEventoRepository _eventoRepository;
         private readonly IArquivoRepository _arquivoRepository;
         private readonly IConfirmacaoEventoRepository _confirmacaoEventoRepository;
+        private readonly IItensListaDesejosRepository _itensListaDesejosRepository;
         private readonly IMapper _mapper;
 
-        public EventoService(IEventoRepository eventoRepository, IMapper mapper, IArquivoRepository arquivoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository)
+        public EventoService(IEventoRepository eventoRepository, IMapper mapper, IArquivoRepository arquivoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository, IItensListaDesejosRepository itensListaDesejosRepository)
         {
             _eventoRepository = eventoRepository;
             _mapper = mapper;
             _arquivoRepository = arquivoRepository;
             _confirmacaoEventoRepository = confirmacaoEventoRepository;
+            _itensListaDesejosRepository = itensListaDesejosRepository;
         }
 
         public async Task<string> AtualizarFotoCapa(Guid eventoId, Stream conteudo, string nomeArquivo, long tamanho)
@@ -119,6 +121,22 @@ namespace ConectElo.Application.Areas.EventosArea.Services
             return dto;
         }
 
+        public async Task<ExibirItemListaDesejosDto> DeselecionarItem(Guid itemId, Guid usuarioId)
+        {
+            var item = await _itensListaDesejosRepository.BuscarPorId(itemId);
+
+            if (item is null)
+                throw new NotFoundException("Item não encontrado.");
+
+            if (item.ReservadoPorId != usuarioId)
+                throw new UnathorizedException("Você não pode desfazer a seleção de outro usuário.");
+
+            item.ReservadoPorId = null;
+            await _itensListaDesejosRepository.Atualizar(item);
+
+            return _mapper.Map<ExibirItemListaDesejosDto>(item);
+        }
+
         public async Task<EditarEventoDto> EditarEvento(EditarEventoDto dto)
         {
             var evento = await _eventoRepository.SelecionarPorId(dto.Id);
@@ -194,6 +212,23 @@ namespace ConectElo.Application.Areas.EventosArea.Services
                     DataAtualizacao = DateTime.UtcNow
                 });
             }
+        }
+
+        public async Task<ExibirItemListaDesejosDto> SelecionarItem(Guid itemId, Guid usuarioId)
+        {
+            var item = await _itensListaDesejosRepository.BuscarPorId(itemId);
+
+            if (item is null)
+                throw new NotFoundException("Item não encontrado.");
+
+            if (item.ReservadoPorId is not null)
+                throw new BusinessException("Este item já foi selecionado por outra pessoa.");
+
+            item.ReservadoPorId = usuarioId;
+            await _itensListaDesejosRepository.Atualizar(item);
+
+            item = await _itensListaDesejosRepository.BuscarPorId(itemId);
+            return _mapper.Map<ExibirItemListaDesejosDto>(item!);
         }
     }
 }

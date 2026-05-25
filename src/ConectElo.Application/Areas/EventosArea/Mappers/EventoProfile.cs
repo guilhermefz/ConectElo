@@ -24,7 +24,10 @@ namespace ConectElo.Application.Areas.EventosArea.Mappers
 
             CreateMap<AmigoSecretoEvento, ExibirAmigoSecretoDto>().ReverseMap();
             CreateMap<ListaDesejos, ExibirListaDesejosDto>().ReverseMap();
-            CreateMap<ItensListaDesejos, ExibirItemListaDesejosDto>().ReverseMap();
+
+            CreateMap<ItensListaDesejos, ExibirItemListaDesejosDto>()
+                .ForMember(dest => dest.ReservadoPorNome, opt => opt.MapFrom(src => src.ReservadoPor != null ? src.ReservadoPor.Nome : null))
+                .ForMember(dest => dest.ReservadoPorFoto, opt => opt.MapFrom(src => src.ReservadoPor != null ? src.ReservadoPor.FotoPerdilUrl : null));
         }
     }
 }

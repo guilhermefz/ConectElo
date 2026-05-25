@@ -190,5 +190,35 @@ namespace ConectElo.API.Areas.Eventos
             }
             catch (Exception ex) { return ErrorResponse(ex); }
         }
+
+        [HttpPut("ListaDesejos/Selecionar/{itemId}")]
+        public async Task<IActionResult> SelecionarItem(Guid itemId)
+        {
+            try
+            {
+                var usuarioId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var item = await _eventoService.SelecionarItem(itemId, usuarioId);
+                return OkResponse(item, "Item selecionado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpDelete("ListaDesejos/Selecionar/{itemId}")]
+        public async Task<IActionResult> DeselecionarItem(Guid itemId)
+        {
+            try
+            {
+                var usuarioId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var item = await _eventoService.DeselecionarItem(itemId, usuarioId);
+                return OkResponse(item, "Item liberado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
     }
 }
