@@ -6,6 +6,8 @@ using ConectElo.Domain.Areas.Dinamicas.Entities;
 using ConectElo.Domain.Areas.Eventos.Entities;
 using ConectElo.Domain.Areas.Eventos.Enuns;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
+using ConectElo.Domain.Areas.Geral.Entities;
+using ConectElo.Domain.Areas.Geral.Enuns;
 using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using ConectElo.Domain.Exceptions;
 
@@ -15,13 +17,15 @@ namespace ConectElo.Application.Areas.EventosArea.Services
     {
         private readonly IEventoRepository _eventoRepository;
         private readonly IArquivoRepository _arquivoRepository;
+        private readonly IConfirmacaoEventoRepository _confirmacaoEventoRepository;
         private readonly IMapper _mapper;
 
-        public EventoService(IEventoRepository eventoRepository, IMapper mapper, IArquivoRepository arquivoRepository)
+        public EventoService(IEventoRepository eventoRepository, IMapper mapper, IArquivoRepository arquivoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository)
         {
             _eventoRepository = eventoRepository;
             _mapper = mapper;
             _arquivoRepository = arquivoRepository;
+            _confirmacaoEventoRepository = confirmacaoEventoRepository;
         }
 
         public async Task<string> AtualizarFotoCapa(Guid eventoId, Stream conteudo, string nomeArquivo, long tamanho)
@@ -134,16 +138,50 @@ namespace ConectElo.Application.Areas.EventosArea.Services
             await _eventoRepository.Excluir(evento);
         }
 
-        public async Task<List<ExibirEventoDto>> ListarPorGrupo(Guid grupoId)
+        public async Task<List<ExibirEventoDto>> ListarPorGrupo(Guid grupoId, Guid usuarioId)
         {
             var eventos = await _eventoRepository.ListarPorGrupo(grupoId);
-            return _mapper.Map<List<ExibirEventoDto>>(eventos);
+            var dtos = _mapper.Map<List<ExibirEventoDto>>(eventos);
+
+            if (dtos.Count > 0)
+            {
+                var ids = dtos.Select(e => e.Id).ToList();
+                var participacoes = await _confirmacaoEventoRepository.BuscarParticipacoesPorEventos(ids, usuarioId);
+                foreach (var dto in dtos)
+                {
+                    dto.ParticipacaoUsuario = participacoes.GetValueOrDefault(dto.Id);
+                }
+            }
+
+            return dtos;
         }
 
         public async Task<List<ExibirEventoDto>> ListarPorUsuario(Guid usuarioId)
         {
             var eventos = await _eventoRepository.ListarPorUsuario(usuarioId);
             return _mapper.Map<List<ExibirEventoDto>>(eventos);
+        }
+
+        public async Task RegistrarParticipacao(Guid eventoId, Guid usuarioId, StatusConfirmacaoEventoEnum status)
+        {
+            var confirmacao = await _confirmacaoEventoRepository.BuscarPorEventoEUsuario(eventoId, usuarioId);
+
+            if (confirmacao is not null)
+            {
+                confirmacao.Status = status;
+                confirmacao.DataAtualizacao = DateTime.UtcNow;
+                await _confirmacaoEventoRepository.Atualizar(confirmacao);
+            }
+            else
+            {
+                await _confirmacaoEventoRepository.Inserir(new ConfirmacaoEvento
+                {
+                    EventoId = eventoId,
+                    UsuarioId = usuarioId,
+                    Status = status,
+                    DataAtualizacao = DateTime.UtcNow
+                });
+            }
         }
     }
 }

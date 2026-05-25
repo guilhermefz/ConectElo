@@ -1,4 +1,5 @@
 ﻿using ConectElo.Domain.Areas.Eventos.Enuns;
+using ConectElo.Domain.Areas.Geral.Enuns;
 
 namespace ConectElo.Application.Areas.EventosArea.DTOs
 {
@@ -17,5 +18,6 @@ namespace ConectElo.Application.Areas.EventosArea.DTOs
         public Guid GrupoId { get; set; }
         public string? FotoCapaUrl { get; set; }
         public string? CriadorNome { get; set; }
+        public StatusConfirmacaoEventoEnum? ParticipacaoUsuario {  get; set; }
     }
 }

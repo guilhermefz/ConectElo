@@ -66,7 +66,9 @@ namespace ConectElo.API.Areas.Eventos
                 if (grupoId == Guid.Empty)
                     return BadRequestResponse("O Id do grupo não é válido.");
 
-                var eventos = await _eventoService.ListarPorGrupo(grupoId);
+                var usuarioId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+                var eventos = await _eventoService.ListarPorGrupo(grupoId, usuarioId);
                 return OkResponse(eventos, "Eventos listados com sucesso");
             }
             catch (Exception ex)
@@ -175,6 +177,18 @@ namespace ConectElo.API.Areas.Eventos
             {
                 return ErrorResponse(ex);
             }
+        }
+
+        [HttpPost("{eventoId}/Participacao")]
+        public async Task<IActionResult> RegistrarParticipacao(Guid eventoId, RegistrarParticipacaoDto dto)
+        {
+            try
+            {
+                var usuarioId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                await _eventoService.RegistrarParticipacao(eventoId, usuarioId, dto.Status);
+                return OkResponse("Participação registrada com sucesso.");
+            }
+            catch (Exception ex) { return ErrorResponse(ex); }
         }
     }
 }
