@@ -33,5 +33,11 @@ namespace ConectElo.Infra.Areas.Eventos.Repositories
                                     .FirstOrDefaultAsync(c => c.EventoId == eventoId
                                                         && c.UsuarioId == usuarioId);
         }
+
+        public async Task<List<ConfirmacaoEvento>> ListarPorEvento(Guid eventoId)
+            => await _context.ConfirmacaoEventos
+                .Include(c => c.Usuario)
+                .Where(c => c.EventoId == eventoId)
+                .ToListAsync();
     }
 }

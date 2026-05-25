@@ -159,7 +159,19 @@ namespace ConectElo.Application.Areas.EventosArea.Services
         public async Task<List<ExibirEventoDto>> ListarPorUsuario(Guid usuarioId)
         {
             var eventos = await _eventoRepository.ListarPorUsuario(usuarioId);
-            return _mapper.Map<List<ExibirEventoDto>>(eventos);
+            var dtos = _mapper.Map<List<ExibirEventoDto>>(eventos);
+
+            if (dtos.Count > 0)
+            {
+                var ids = dtos.Select(e => e.Id).ToList();
+                var participacoes = await _confirmacaoEventoRepository.BuscarParticipacoesPorEventos(ids, usuarioId);
+                foreach (var dto in dtos)
+                {
+                    dto.ParticipacaoUsuario = participacoes.GetValueOrDefault(dto.Id);
+                }
+            }
+
+            return dtos;
         }
 
         public async Task RegistrarParticipacao(Guid eventoId, Guid usuarioId, StatusConfirmacaoEventoEnum status)

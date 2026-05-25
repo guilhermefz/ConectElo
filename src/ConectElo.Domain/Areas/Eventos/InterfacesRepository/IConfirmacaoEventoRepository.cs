@@ -8,5 +8,6 @@ namespace ConectElo.Domain.Areas.Eventos.InterfacesRepository
     {
         Task<ConfirmacaoEvento?> BuscarPorEventoEUsuario(Guid eventoId, Guid usuarioId);
         Task<Dictionary<Guid, StatusConfirmacaoEventoEnum?>> BuscarParticipacoesPorEventos(List<Guid> eventoIds, Guid usuarioId);
+        Task<List<ConfirmacaoEvento>> ListarPorEvento(Guid eventoId);
     }
 }
