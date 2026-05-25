@@ -153,6 +153,7 @@ namespace ConectElo.API
             builder.Services.AddScoped<IMensagemService, MensagemService>();
             builder.Services.AddScoped<IConfirmacaoEventoRepository, ConfirmacaoEventoRepository>();
             builder.Services.AddScoped<IConfirmacaoEventoService, ConfirmacaoEventoService>();
+            builder.Services.AddScoped<IItensListaDesejosRepository, ItensListaDesejosRepository>();
 
             builder.Services.AddResponseCompression(options =>
             {

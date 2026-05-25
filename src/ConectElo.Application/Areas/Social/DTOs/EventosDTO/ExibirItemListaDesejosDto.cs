@@ -6,5 +6,7 @@
         public string Descricao { get; set; }
         public string? UrlReference { get; set; }
         public Guid? ReservadoPorId { get; set; }
+        public string? ReservadoPorNome { get; set; }
+        public string? ReservadoPorFoto { get; set; }
     }
 }
