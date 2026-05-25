@@ -27,7 +27,9 @@ namespace ConectElo.Infra.Areas.Eventos.Repositories
         public async Task<List<Evento>> ListarPorUsuario(Guid usuarioId)
         {
             return await _context.Set<Evento>()
-                .Where(e => e.Criador == usuarioId && e.DataDelecao == null)
+                .Where(e => e.DataDelecao == null &&
+                    (e.Criador == usuarioId ||
+                     e.Grupo!.Membros.Any(m => m.UsuarioId == usuarioId && m.DataSaida == null)))
                 .Include(e => e.CriadorEvento)
                 .OrderByDescending(e => e.DataCriacao)
                 .ToListAsync();

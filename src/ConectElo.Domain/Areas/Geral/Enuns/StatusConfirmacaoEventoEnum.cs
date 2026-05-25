@@ -4,6 +4,7 @@
     {
         AguardandoResposta,
         Confirmado,
-        NaoConfirmado
+        NaoConfirmado,
+        Talvez
     }
 }
