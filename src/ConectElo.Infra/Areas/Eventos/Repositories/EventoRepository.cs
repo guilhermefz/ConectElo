@@ -51,5 +51,11 @@ namespace ConectElo.Infra.Areas.Eventos.Repositories
                 .Include(e => e.CriadorEvento)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
+
+        public async Task<AniversarioEvento?> BuscarAniversarioPorListaDesejosId(Guid listaId)
+        {
+            return await _context.Set<AniversarioEvento>()
+                .FirstOrDefaultAsync(a => a.ListaDesejosId == listaId);
+        }
     }
 }

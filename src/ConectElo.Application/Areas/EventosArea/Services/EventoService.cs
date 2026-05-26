@@ -30,6 +30,29 @@ namespace ConectElo.Application.Areas.EventosArea.Services
             _itensListaDesejosRepository = itensListaDesejosRepository;
         }
 
+        public async Task<ExibirItemListaDesejosDto> AdicionarItemListaDesejos(Guid listaId, CriarItemListaDesejosDto dto, Guid criadorId)
+        {
+            var evento = await _eventoRepository.BuscarAniversarioPorListaDesejosId(listaId);
+
+            if (evento is null)
+                throw new NotFoundException("Lista de desejos não encontrada.");
+
+            if (evento.Criador != criadorId)
+                throw new UnathorizedException("Apenas o criador pode adicionar itens.");
+
+            var item = new ItensListaDesejos
+            {
+                Descricao = dto.Descricao,
+                UrlReference = dto.UrlReference ?? string.Empty,
+                ListaDesejosId = listaId
+            };
+
+            await _itensListaDesejosRepository.Inserir(item);
+
+            item = await _itensListaDesejosRepository.BuscarPorId(item.Id);
+            return _mapper.Map<ExibirItemListaDesejosDto>(item!);
+        }
+
         public async Task<string> AtualizarFotoCapa(Guid eventoId, Stream conteudo, string nomeArquivo, long tamanho)
         {
             var evento = await _eventoRepository.SelecionarPorId(eventoId);
@@ -212,6 +235,21 @@ namespace ConectElo.Application.Areas.EventosArea.Services
                     DataAtualizacao = DateTime.UtcNow
                 });
             }
+        }
+
+        public async Task RemoverItemListaDesejos(Guid itemId, Guid criadorId)
+        {
+            var item = await _itensListaDesejosRepository.BuscarPorId(itemId);
+
+            if (item is null)
+                throw new NotFoundException("Item não encontrado.");
+
+            var evento = await _eventoRepository.BuscarAniversarioPorListaDesejosId(item.ListaDesejosId);
+
+            if (evento is null || evento.Criador != criadorId)
+                throw new UnathorizedException("Apenas o criador pode remover itens.");
+
+            await _itensListaDesejosRepository.Excluir(item);
         }
 
         public async Task<ExibirItemListaDesejosDto> SelecionarItem(Guid itemId, Guid usuarioId)

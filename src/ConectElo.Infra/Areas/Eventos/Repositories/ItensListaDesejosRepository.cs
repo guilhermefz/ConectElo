@@ -22,5 +22,15 @@ namespace ConectElo.Infra.Areas.Eventos.Repositories
                 .Include(i => i.ReservadoPor)
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
+
+        public async Task RemoverPorId(Guid id)
+        {
+            var item = await _context.ItensListaDesejos.FindAsync(id);
+            if (item is not null)
+            {
+                _context.ItensListaDesejos.Remove(item);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -220,5 +220,29 @@ namespace ConectElo.API.Areas.Eventos
                 return ErrorResponse(ex);
             }
         }
+
+        [HttpPost("ListaDesejos/{listaId}/Itens")]
+        public async Task<IActionResult> AdicionarItem(Guid listaId, [FromBody] CriarItemListaDesejosDto dto)
+        {
+            try
+            {
+                var criadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var item = await _eventoService.AdicionarItemListaDesejos(listaId, dto, criadorId);
+                return OkResponse(item, "Item adicionado com sucesso.");
+            }
+            catch (Exception ex) { return ErrorResponse(ex); }
+        }
+
+        [HttpDelete("ListaDesejos/Itens/{itemId}")]
+        public async Task<IActionResult> RemoverItem(Guid itemId)
+        {
+            try
+            {
+                var criadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                await _eventoService.RemoverItemListaDesejos(itemId, criadorId);
+                return OkResponse("Item removido com sucesso.");
+            }
+            catch (Exception ex) { return ErrorResponse(ex); }
+        }
     }
 }

@@ -18,5 +18,7 @@ namespace ConectElo.Application.Areas.EventosArea.InterfacesService
         Task RegistrarParticipacao(Guid eventoId, Guid usuarioID, StatusConfirmacaoEventoEnum status);
         Task<ExibirItemListaDesejosDto> SelecionarItem(Guid itemId, Guid usuarioId);
         Task<ExibirItemListaDesejosDto> DeselecionarItem(Guid itemId, Guid usuarioId);
+        Task<ExibirItemListaDesejosDto> AdicionarItemListaDesejos(Guid listaId, CriarItemListaDesejosDto dto, Guid criadorId);
+        Task RemoverItemListaDesejos(Guid itemId, Guid criadorId);
     }
 }

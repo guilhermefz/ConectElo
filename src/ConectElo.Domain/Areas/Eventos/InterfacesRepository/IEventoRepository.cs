@@ -1,4 +1,5 @@
 ﻿using ConectElo.Domain.Areas.Base.Interfaces;
+using ConectElo.Domain.Areas.Dinamicas.Entities;
 using ConectElo.Domain.Areas.Eventos.Entities;
 
 namespace ConectElo.Domain.Areas.Eventos.InterfacesRepository
@@ -8,5 +9,7 @@ namespace ConectElo.Domain.Areas.Eventos.InterfacesRepository
         Task<List<Evento>> ListarPorGrupo(Guid grupoId);
 
         Task<List<Evento>> ListarPorUsuario(Guid usuarioId);
+
+        Task<AniversarioEvento?> BuscarAniversarioPorListaDesejosId(Guid listaId);
     }
 }
