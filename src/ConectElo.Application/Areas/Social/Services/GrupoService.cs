@@ -160,5 +160,18 @@ namespace ConectElo.Application.Areas.Social.Services
 
             return _mapper.Map<GrupoExibicaoDto>(grupo);
         }
+
+        public async Task SairDoGrupoAsync(Guid grupoId, Guid usuarioId)
+        {
+            var membro = await _membrosGrupoRepository.BuscarMembroPorGrupoEUsuario(grupoId, usuarioId);
+
+            if (membro == null)
+                throw new NotFoundException("Membro não encontrado.");
+
+            if (membro.Tipo == TipoPermissaoMembroEnum.Proprietario)
+                throw new BusinessException("O proprietário não pode sair do grupo.");
+
+            await _membrosGrupoRepository.Excluir(membro);
+        }
     }
 }

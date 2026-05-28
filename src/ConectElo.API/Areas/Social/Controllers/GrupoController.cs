@@ -12,7 +12,6 @@ namespace ConectElo.API.Areas.Social.Controllers
     public class GrupoController : BaseController
     {
         private readonly IGrupoService _grupoService;
-        private Guid usuarioIdLogado => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         public GrupoController(IGrupoService grupoService, IWebHostEnvironment env) : base(env)
         {
@@ -112,7 +111,7 @@ namespace ConectElo.API.Areas.Social.Controllers
         {
             try
             {
-                var codigo = await _grupoService.GerarCodigoConviteAsync(grupoId, usuarioIdLogado, dto.TipoExpiracao);
+                var codigo = await _grupoService.GerarCodigoConviteAsync(grupoId, UsuarioIdLogado, dto.TipoExpiracao);
                 return OkResponse(codigo, "Link de convite gerado com sucesso.");
             }
             catch (Exception ex)
@@ -126,7 +125,7 @@ namespace ConectElo.API.Areas.Social.Controllers
         {
             try
             {
-                var grupo = await _grupoService.EntrarPorConviteAsync(codigo, usuarioIdLogado);
+                var grupo = await _grupoService.EntrarPorConviteAsync(codigo, UsuarioIdLogado);
                 return OkResponse(grupo, "Você entrou no grupo com sucesso.");
             }
             catch (Exception ex)
@@ -151,8 +150,22 @@ namespace ConectElo.API.Areas.Social.Controllers
                     Tamanho = foto.Length
                 };
 
-                var resultado = await _grupoService.AtualizarFotoGrupoAsync(grupoId, usuarioIdLogado, fotoDto);
+                var resultado = await _grupoService.AtualizarFotoGrupoAsync(grupoId, UsuarioIdLogado, fotoDto);
                 return OkResponse(resultado, "Foto do grupo atualizada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpDelete("{grupoId:guid}/Sair")]
+        public async Task<IActionResult> SairDoGrupo(Guid grupoId)
+        {
+            try
+            {
+                await _grupoService.SairDoGrupoAsync(grupoId, UsuarioIdLogado);
+                return OkResponse(true, "Você saiu do grupo com sucesso.");
             }
             catch (Exception ex)
             {
