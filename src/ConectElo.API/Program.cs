@@ -49,6 +49,7 @@ namespace ConectElo.API
                     cfg.AddProfile<PostagemProfile>();
                     cfg.AddProfile<EventoProfile>();
                     cfg.AddProfile<MensagemProfile>();
+                    cfg.AddProfile<NotificacoesProfile>();
                 },
                 NullLoggerFactory.Instance
             );

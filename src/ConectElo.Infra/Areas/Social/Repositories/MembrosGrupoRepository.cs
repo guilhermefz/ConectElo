@@ -25,5 +25,12 @@ namespace ConectElo.Infra.Areas.Social.Repositories
         {
             return await _context.membrosGrupos.FirstOrDefaultAsync(m => m.GrupoId == grupoId && m.UsuarioId ==usuarioId);
         }
+
+        public async Task<List<MembrosGrupo>> ListarPorGrupo(Guid grupoId)
+        {
+            return await _context.membrosGrupos
+                .Where(m => m.GrupoId == grupoId)
+                .ToListAsync();
+        }
     }
 }

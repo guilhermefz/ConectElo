@@ -7,5 +7,6 @@ namespace ConectElo.Domain.Areas.Social.InterfacesRepository
     {
         Task<bool> VerificarMembroASync(Guid grupoId, Guid usuarioId);
         Task<MembrosGrupo?> BuscarMembroPorGrupoEUsuario(Guid grupoId, Guid usuarioId);
+        Task<List<MembrosGrupo>> ListarPorGrupo(Guid grupoId);
     }
 }
