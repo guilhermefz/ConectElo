@@ -9,6 +9,8 @@ namespace ConectElo.Application.Areas.Social.DTOs
         public string Nome { get; set; }
         public string Descricao { get; set; }
         public string? CodigoConvite { get; set; }
+        public DateTime? DataExpiracaoConvite { get; set; }
+        public TipoExpiracaoConviteEnum? TipoExpiracaoConvite { get; set; }
         public DateTime DataCriacao { get; set; }
         public DateTime? DataDelecao { get; set; }
         public string? ImgGrupo { get; set; }

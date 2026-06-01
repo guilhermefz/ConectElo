@@ -10,7 +10,10 @@ namespace ConectElo.Application.Areas.Social.Mappers
         {
             CreateMap<CriarGrupoDto, Grupo>().ReverseMap();
 
-            CreateMap<BuscarGrupoDto, Grupo>().ReverseMap();
+            CreateMap<BuscarGrupoDto, Grupo>();
+
+            CreateMap<Grupo, BuscarGrupoDto>()
+                .ForMember(dest => dest.DataExpiracaoConvite, opt => opt.MapFrom(src => src.CodigoConviteExpiracao));
 
             CreateMap<EditarGrupoDto, Grupo>().ReverseMap();
 
