@@ -9,6 +9,9 @@ using ConectElo.Application.Areas.Comunicacao.Services;
 using ConectElo.Application.Areas.EventosArea.InterfacesService;
 using ConectElo.Application.Areas.EventosArea.Mappers;
 using ConectElo.Application.Areas.EventosArea.Services;
+using ConectElo.Application.Areas.Home.InterfacesService;
+using ConectElo.Application.Areas.Home.Mappers;
+using ConectElo.Application.Areas.Home.Services;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Application.Areas.Social.Mappers;
 using ConectElo.Application.Areas.Social.Services;
@@ -50,6 +53,7 @@ namespace ConectElo.API
                     cfg.AddProfile<EventoProfile>();
                     cfg.AddProfile<MensagemProfile>();
                     cfg.AddProfile<NotificacoesProfile>();
+                    cfg.AddProfile<HomeProfile>();
                 },
                 NullLoggerFactory.Instance
             );
@@ -157,6 +161,7 @@ namespace ConectElo.API
             builder.Services.AddScoped<IItensListaDesejosRepository, ItensListaDesejosRepository>();
             builder.Services.AddScoped<INotificacoesRepository, NotificacaoRepository>();
             builder.Services.AddScoped<INotificacaoService, NotificacaoService>();
+            builder.Services.AddScoped<IHomeService, HomeService>();
 
             builder.Services.AddResponseCompression(options =>
             {

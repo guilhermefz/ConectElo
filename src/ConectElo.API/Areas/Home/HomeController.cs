@@ -1,7 +1,6 @@
 ﻿using ConectElo.API.Areas.Base.Controllers;
 using ConectElo.Application.Areas.Home.InterfacesService;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ConectElo.API.Areas.Home
@@ -16,6 +15,20 @@ namespace ConectElo.API.Areas.Home
         public HomeController(IWebHostEnvironment env, IHomeService homeService) : base(env)
         {
             _homeService = homeService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> TelaInicial()
+        {
+            try
+            {
+                var dados = await _homeService.BuscarTelaInicial(UsuarioIdLogado);
+                return OkResponse(dados, "Tela inicial carregada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
         }
     }
 }
