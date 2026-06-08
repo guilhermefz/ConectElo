@@ -1,9 +1,12 @@
 ﻿using ConectElo.API.Areas.Base.Controllers;
+using ConectElo.API.Areas.Comunicacao.Hubs;
+using ConectElo.Application.Areas.Comunicacao.InterfacesService;
 using ConectElo.Application.Areas.EventosArea.DTOs;
 using ConectElo.Application.Areas.EventosArea.InterfacesService;
 using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
 namespace ConectElo.API.Areas.Eventos
@@ -14,10 +17,14 @@ namespace ConectElo.API.Areas.Eventos
     public class EventosController : BaseController
     {
         private readonly IEventoService _eventoService;
+        private readonly INotificacaoService _notificacaoService;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public EventosController(IEventoService eventoService, IWebHostEnvironment env) : base(env) 
+        public EventosController(IEventoService eventoService, IWebHostEnvironment env, INotificacaoService notificacaoService, IHubContext<ChatHub> hubContext) : base(env) 
         {
             _eventoService = eventoService;
+            _hubContext = hubContext;
+            _notificacaoService = notificacaoService;
         }
 
         [HttpPost("Aniversario")]
@@ -28,9 +35,12 @@ namespace ConectElo.API.Areas.Eventos
                 if (!ModelState.IsValid)
                     return BadRequestResponse("Os dados não são válidos para a criação.");
 
-                var criadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var evento = await _eventoService.CriarAniversario(dto, UsuarioIdLogado);
+                var notificacoes = await _notificacaoService.CriarNotificacoesNovoEvento(evento.Id, evento.GrupoId, evento.Titulo, nomeCriador: NomeUsuarioLogado, UsuarioIdLogado);
 
-                var evento = await _eventoService.CriarAniversario(dto, criadorId);
+                foreach (var notificacao in notificacoes)
+                    await _hubContext.Clients.User(notificacao.UsuarioId.ToString()).SendAsync("ReceberAviso", notificacao);
+
                 return OkResponse(evento, "Evento criado com sucesso!");
             }
             catch (Exception ex)
@@ -219,6 +229,30 @@ namespace ConectElo.API.Areas.Eventos
             {
                 return ErrorResponse(ex);
             }
+        }
+
+        [HttpPost("ListaDesejos/{listaId}/Itens")]
+        public async Task<IActionResult> AdicionarItem(Guid listaId, [FromBody] CriarItemListaDesejosDto dto)
+        {
+            try
+            {
+                var criadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var item = await _eventoService.AdicionarItemListaDesejos(listaId, dto, criadorId);
+                return OkResponse(item, "Item adicionado com sucesso.");
+            }
+            catch (Exception ex) { return ErrorResponse(ex); }
+        }
+
+        [HttpDelete("ListaDesejos/Itens/{itemId}")]
+        public async Task<IActionResult> RemoverItem(Guid itemId)
+        {
+            try
+            {
+                var criadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                await _eventoService.RemoverItemListaDesejos(itemId, criadorId);
+                return OkResponse("Item removido com sucesso.");
+            }
+            catch (Exception ex) { return ErrorResponse(ex); }
         }
     }
 }

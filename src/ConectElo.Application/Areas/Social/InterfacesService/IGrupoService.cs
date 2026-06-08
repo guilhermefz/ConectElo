@@ -14,5 +14,6 @@ namespace ConectElo.Application.Areas.Social.InterfacesService
         Task<string> AtualizarFotoGrupoAsync(Guid grupoId, Guid usuarioId, AtualizarFotoDto foto);
         Task<ConviteGeradoDto> GerarCodigoConviteAsync(Guid grupoId, Guid usuarioId, TipoExpiracaoConviteEnum tipoExpiracao);
         Task<GrupoExibicaoDto> EntrarPorConviteAsync(string codigoConvite, Guid usuarioId);
+        Task SairDoGrupoAsync(Guid grupoId, Guid usuarioId);
     }
 }

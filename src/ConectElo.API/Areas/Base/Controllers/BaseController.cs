@@ -2,6 +2,8 @@
 using ConectElo.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ConectElo.API.Areas.Base.Controllers
 {
@@ -11,6 +13,8 @@ namespace ConectElo.API.Areas.Base.Controllers
     public class BaseController : ControllerBase
     {
         protected readonly IWebHostEnvironment _env;
+        protected Guid UsuarioIdLogado => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        protected string NomeUsuarioLogado => User.FindFirstValue(JwtRegisteredClaimNames.Name) ?? string.Empty;
 
         public BaseController(IWebHostEnvironment env)
         {

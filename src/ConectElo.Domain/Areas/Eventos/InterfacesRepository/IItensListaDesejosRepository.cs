@@ -6,5 +6,6 @@ namespace ConectElo.Domain.Areas.Eventos.InterfacesRepository
     public interface IItensListaDesejosRepository : IGenericRepository<ItensListaDesejos>
     {
         Task<ItensListaDesejos?> BuscarPorId(Guid id);
+        Task RemoverPorId(Guid id);
     }
 }
