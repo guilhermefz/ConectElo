@@ -45,5 +45,19 @@ namespace ConectElo.API.Areas.Comunicacao.Controllers
                 return ErrorResponse(ex);
             }
         }
+
+        [HttpPut("marcar-todas")]
+        public async Task<IActionResult> MarcarTodasComoLidas()
+        {
+            try
+            {
+                await _notificacaoService.MarcarTodasComoLidas(UsuarioIdLogado);
+                return OkResponse("Todos os avisos marcados como lidos com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
     }
 }
