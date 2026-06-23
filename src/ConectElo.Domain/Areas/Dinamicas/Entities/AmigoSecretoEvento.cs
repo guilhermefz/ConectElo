@@ -11,6 +11,7 @@ namespace ConectElo.Domain.Areas.Dinamicas.Entities
         public DateTime? DataExecucaoSorteio { get; set; }
         public bool Sorteado { get; set;}
         public StatusSorteioEnum StatusSorteio { get; set; } = StatusSorteioEnum.AguardandoParticipantes;
+        public string? HangfireJobId { get; set; }
         public virtual ICollection<ResultadoSorteio> Resultados { get; set; } = new List<ResultadoSorteio>();
     }
 }
