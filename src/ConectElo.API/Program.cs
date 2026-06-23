@@ -1,5 +1,6 @@
 using AutoMapper;
 using CloudinaryDotNet;
+using ConectElo.API.Areas.AmigoSecreto.Hubs;
 using ConectElo.API.Areas.Comunicacao.Hubs;
 using ConectElo.Application.Areas.AmigoSecreto.InterfacesService;
 using ConectElo.Application.Areas.AmigoSecreto.Mappers;
@@ -226,6 +227,7 @@ namespace ConectElo.API
             
             }
             app.MapHub<ChatHub>("/hubs/chat");
+            app.MapHub<AmigoSecretoHub>("/hubs/amigo-secreto");
 
             app.Use(async (context, next) =>
             {
