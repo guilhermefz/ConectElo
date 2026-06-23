@@ -30,6 +30,8 @@ namespace ConectElo.Infra.Data
         public DbSet<MembrosGrupo> membrosGrupos { get; set; }
         public DbSet<Mural> Mural { get; set; }
         public DbSet<Postagens> Postagens { get; set; }
+        public DbSet<ResultadoSorteio> ResultadoSorteios { get; set; }
+        public DbSet<MensagemAnonima> MensagensAnonimas { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
