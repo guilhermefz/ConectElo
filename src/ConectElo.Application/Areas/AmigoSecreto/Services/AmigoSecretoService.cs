@@ -5,11 +5,13 @@ using ConectElo.Application.Areas.AmigoSecreto.Utils;
 using ConectElo.Domain.Areas.Dinamicas.Entities;
 using ConectElo.Domain.Areas.Dinamicas.Enuns;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
+using ConectElo.Domain.Areas.Geral.Enuns;
 using ConectElo.Domain.Exceptions;
+using Hangfire;
 
 namespace ConectElo.Application.Areas.AmigoSecreto.Services
 {
-    public class AmigoSecretoService : IamigoSecretoService
+    public class AmigoSecretoService : IAmigoSecretoService
     {
         private readonly IEventoRepository _eventoRepository;
         private readonly IConfirmacaoEventoRepository _confirmacaoEventoRepository;
@@ -38,20 +40,20 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             if (dto.DataSorteio <= DateTime.UtcNow)
                 throw new BusinessException("A data do sorteio deve ser no futuro.");
 
-            //if (!string.IsNullOrEmpty(evento.HangfireJobId))
-            //    BackgroundJob.Delete(evento.HangfireJobId);
+            if (!string.IsNullOrEmpty(evento.HangfireJobId))
+                BackgroundJob.Delete(evento.HangfireJobId);
 
-            //var jobId = BackgroundJob.Schedule<IAmigoSecretoService>(
-            //    s => s.ExecutarSorteio(dto.EventoId),
-            //    dto.DataSorteio);
+            var jobId = BackgroundJob.Schedule<IAmigoSecretoService>(
+                s => s.ExecutarSorteio(dto.EventoId),
+                dto.DataSorteio);
 
             evento.DataSorteio = dto.DataSorteio;
-            //evento.HangfireHobId = jobId;
+            evento.HangfireJobId = jobId;
             evento.StatusSorteio = StatusSorteioEnum.SorteioAgendado;
 
             await _eventoRepository.Atualizar(evento);
             
-            return null; //return jobId;
+            return jobId;
         }
 
         public async Task<SorteioExecutadoDto> ExecutarSorteio(Guid eventoId)
@@ -69,7 +71,7 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
 
             var confirmados = await _confirmacaoEventoRepository.ListarPorEvento(eventoId);
             var participantes = confirmados
-                    .Where(c => c.Status == Domain.Areas.Geral.Enuns.StatusConfirmacaoEventoEnum.Confirmado)
+                    .Where(c => c.Status == StatusConfirmacaoEventoEnum.Confirmado)
                     .Select(c => c.UsuarioId)
                     .ToList();
 
@@ -93,7 +95,7 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             evento.Sorteado = true;
             evento.StatusSorteio = StatusSorteioEnum.Sorteado;
             evento.DataExecucaoSorteio = agora;
-            //evento.HangfireJobId = null;
+            evento.HangfireJobId = null;
 
             await _eventoRepository.Atualizar(evento);
 
@@ -128,12 +130,12 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             if (evento.Sorteado)
                 throw new BusinessException("O sorteio já foi realizado.");
 
-            //if (!string.IsNullOrEmpty(evento.HangfireJobId))
-            //{
-            //    BackgroundJob.Delete(evento.HangfireJobId);
-            //    evento.HangfireJobId = null;
+            if (!string.IsNullOrEmpty(evento.HangfireJobId))
+            {
+                BackgroundJob.Delete(evento.HangfireJobId);
+                evento.HangfireJobId = null;
                 await _eventoRepository.Atualizar(evento);
-            //}
+            }
 
             return await ExecutarSorteio(eventoId);
         }
@@ -169,8 +171,8 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
                 resultado.ComoPresenteador = new ResultadoComoPresenteadorDto
                 {
                     ResultadoSorteioId = comoPresenteador.Id,
-                    NomeRecebedor = comoPresenteador.Recebedor.Nome,
-                    FotoRecebedor = comoPresenteador.Recebedor.FotoPerdilUrl,
+                    NomeRecebedor = comoPresenteador.Recebedor?.Nome ?? "Desconhecido",
+                    FotoRecebedor = comoPresenteador.Recebedor?.FotoPerdilUrl,
                     //ListaDesejos = evento is AniversarioEvento aniversario && aniversario.ListaDesejos is not null ? _mapper.Map<ExibirListaDesejosDto>(aniversario.ListaDesejos) : null
                 };
             }
@@ -190,7 +192,7 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
         {
             await ValidarParticipanteDoResultado(resultadoSorteioId, usuarioId);
 
-            var mensagens = ""; // await _mensagemAnonimaRepository.ListarPorResultado(resultadoSorteioId);
+            var mensagens =  await _mensagemAnonimaRepository.ListarPorResultado(resultadoSorteioId);
 
             return _mapper.Map<List<MensagemAnonimaDto>>(mensagens);
         }

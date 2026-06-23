@@ -2,7 +2,7 @@
 
 namespace ConectElo.Application.Areas.AmigoSecreto.InterfacesService
 {
-    public interface IamigoSecretoService
+    public interface IAmigoSecretoService
     {
         Task<string> AgendarSorteio( AgendarSorteioDto dto, Guid criadorId);
         Task<SorteioExecutadoDto> ExecutarSorteio( Guid eventoId);

@@ -5,6 +5,6 @@ namespace ConectElo.Domain.Areas.Eventos.InterfacesRepository
 {
     public interface IMensagemAnonimaRepository : IGenericRepository<MensagemAnonima>
     {
-        Task<List<MensagemAnonima>> ListarPorUsuario(Guid resultadoSorteioId);
+        Task<List<MensagemAnonima>> ListarPorResultado(Guid resultadoSorteioId);
     }
 }
