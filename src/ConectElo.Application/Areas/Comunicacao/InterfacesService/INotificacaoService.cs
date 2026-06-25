@@ -7,5 +7,6 @@ namespace ConectElo.Application.Areas.Comunicacao.InterfacesService
         Task<List<ExibirNotificacaoDto>> ListarPorUsuario(Guid usuarioId);
         Task MarcarComoLida(Guid notificacaoId, Guid usuarioId);
         Task<List<ExibirNotificacaoDto>> CriarNotificacoesNovoEvento(Guid eventoId, Guid grupoId, string nomeEvento, string nomeCriador, Guid criadorId);
+        Task MarcarTodasComoLidas(Guid usuarioId);
     }
 }

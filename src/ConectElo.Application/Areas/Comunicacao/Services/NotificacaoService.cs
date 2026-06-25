@@ -69,5 +69,10 @@ namespace ConectElo.Application.Areas.Comunicacao.Services
 
             return notificacaoModel;
         }
+
+        public async Task MarcarTodasComoLidas(Guid usuarioId)
+        {
+            await _notificacaoRepository.MarcarTodasComoLidasAsync(usuarioId);
+        }
     }
 }

@@ -1,6 +1,10 @@
 using AutoMapper;
 using CloudinaryDotNet;
+using ConectElo.API.Areas.AmigoSecreto.Hubs;
 using ConectElo.API.Areas.Comunicacao.Hubs;
+using ConectElo.Application.Areas.AmigoSecreto.InterfacesService;
+using ConectElo.Application.Areas.AmigoSecreto.Mappers;
+using ConectElo.Application.Areas.AmigoSecreto.Services;
 using ConectElo.Application.Areas.Autenticacao.InterfacesService;
 using ConectElo.Application.Areas.Autenticacao.Services;
 using ConectElo.Application.Areas.Comunicacao.InterfacesService;
@@ -23,6 +27,8 @@ using ConectElo.Infra.Areas.Comunicacao.Repositories;
 using ConectElo.Infra.Areas.Eventos.Repositories;
 using ConectElo.Infra.Areas.Social.Repositories;
 using ConectElo.Infra.Data;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -54,6 +60,7 @@ namespace ConectElo.API
                     cfg.AddProfile<MensagemProfile>();
                     cfg.AddProfile<NotificacoesProfile>();
                     cfg.AddProfile<HomeProfile>();
+                    cfg.AddProfile<AmigoSecretoProfile>();
                 },
                 NullLoggerFactory.Instance
             );
@@ -92,8 +99,20 @@ namespace ConectElo.API
                 });
             });
 
-
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            builder.Services.AddHangfire(config => config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(options =>
+                    options.UseNpgsqlConnection(connectionString)));
+
+            builder.Services.AddHangfireServer(options =>
+            {
+                options.WorkerCount = 2;
+                options.Queues = new[] { "amigo-secreto", "default" };
+            });
 
             builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, b => b.MigrationsAssembly("ConectElo.Infra")).EnableThreadSafetyChecks(false));
 
@@ -162,6 +181,10 @@ namespace ConectElo.API
             builder.Services.AddScoped<INotificacoesRepository, NotificacaoRepository>();
             builder.Services.AddScoped<INotificacaoService, NotificacaoService>();
             builder.Services.AddScoped<IHomeService, HomeService>();
+            builder.Services.AddScoped<IResultadoSorteioRepository, ResultadoSorteioRepository>();
+            builder.Services.AddScoped<IMensagemAnonimaRepository, MensagemAnonimaRepository>();
+            builder.Services.AddScoped<IAmigoSecretoService, AmigoSecretoService>();
+
 
             builder.Services.AddResponseCompression(options =>
             {
@@ -190,17 +213,21 @@ namespace ConectElo.API
 
             var app = builder.Build();
 
+
+            app.UseResponseCompression();
+            app.UseCors("Default");
+            app.UseAuthentication();
+            app.UseAuthorization();
+            
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
                 app.MapScalarApiReference();
+                app.UseHangfireDashboard("/hangfire");
+            
             }
-
-            app.UseResponseCompression();
-            app.UseAuthentication();
-            app.UseCors("Default");
-            app.UseAuthorization();
             app.MapHub<ChatHub>("/hubs/chat");
+            app.MapHub<AmigoSecretoHub>("/hubs/amigo-secreto");
 
             app.Use(async (context, next) =>
             {

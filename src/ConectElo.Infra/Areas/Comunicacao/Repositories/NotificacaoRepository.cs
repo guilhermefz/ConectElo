@@ -22,5 +22,12 @@ namespace ConectElo.Infra.Areas.Comunicacao.Repositories
                 .OrderByDescending(n => n.DataEnvio)
                 .ToListAsync();
         }
+
+        public async Task MarcarTodasComoLidasAsync(Guid usuarioId)
+        {
+            await _context.Notificacoes
+                .Where(n => n.UsuarioId == usuarioId && !n.NotificacaoLida)
+                .ExecuteUpdateAsync(s => s.SetProperty(n => n.NotificacaoLida, true));
+        }
     }
 }
