@@ -56,7 +56,54 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             return jobId;
         }
 
-        public async Task<SorteioExecutadoDto> ExecutarSorteio(Guid eventoId)
+        public async Task<SorteioExecutadoDto> Sortear(Guid eventoId, Guid criadorId)
+        {
+            var evento = await BuscarAmigoSecreto(eventoId);
+
+            ValidarCriador(evento.Criador, criadorId);
+
+            if (evento.Sorteado)
+                throw new BusinessException("O sorteio já foi realizado.");
+
+            var confirmados = await _confirmacaoEventoRepository.ListarPorEvento(eventoId);
+            var participantes = confirmados
+                    .Where(c => c.Status == StatusConfirmacaoEventoEnum.Confirmado)
+                    .Select(c => c.UsuarioId)
+                    .ToList();
+
+            if (participantes.Count < 2)
+                throw new BusinessException("São necessários pelo menos 2 participantes confirmados para realizar o sorteio.");
+
+            var pares = SorteioAlgoritmo.Sortear(participantes);
+
+            var agora = DateTime.UtcNow;
+            var resultados = pares.Select(par => new ResultadoSorteio
+            {
+                EventoId = eventoId,
+                PresenteadorId = par.Presenteador,
+                RecebedorId = par.Recebedor,
+                DataSorteio = agora,
+            }).ToList();
+
+            foreach (var resultado in resultados)
+                await _resultadoSorteioRepository.Inserir(resultado);
+
+            evento.Sorteado = true;
+            evento.StatusSorteio = StatusSorteioEnum.Sorteado;
+            evento.DataExecucaoSorteio = agora;
+
+            await _eventoRepository.Atualizar(evento);
+
+            return new SorteioExecutadoDto
+            {
+                EventoId = eventoId,
+                DataExecucao = agora,
+                TotalPares = pares.Count,
+                ParticipantesIds = participantes
+            };
+        }
+
+        public async Task<SorteioExecutadoDto> ExecutarSorteio(Guid eventoId) //obsoleto
         {
             var evento = await BuscarAmigoSecreto(eventoId);
 

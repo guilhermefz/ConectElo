@@ -37,8 +37,22 @@ namespace ConectElo.API.Areas.AmigoSecreto.Controllers
             }
         }
 
+        [HttpPost("{eventoId}/Sortear")]
+        public async Task<IActionResult> Sortear(Guid eventoId)
+        {
+            try
+            {
+                var resultado = await _amigoSecretoService.Sortear(eventoId, UsuarioIdLogado);
+                return OkResponse(resultado, "Sorteio realizado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
         [HttpPost("{eventoId}/SortearAgora")]
-        public async Task<IActionResult> SortearAgora(Guid eventoId)
+        public async Task<IActionResult> SortearAgora(Guid eventoId) //obsoleto
         {
             try
             {
