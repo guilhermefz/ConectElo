@@ -2,6 +2,7 @@
 using ConectElo.Application.Areas.AmigoSecreto.DTOs;
 using ConectElo.Application.Areas.AmigoSecreto.InterfacesService;
 using ConectElo.Application.Areas.AmigoSecreto.Utils;
+using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
 using ConectElo.Domain.Areas.Dinamicas.Entities;
 using ConectElo.Domain.Areas.Dinamicas.Enuns;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
@@ -17,14 +18,18 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
         private readonly IConfirmacaoEventoRepository _confirmacaoEventoRepository;
         private readonly IResultadoSorteioRepository _resultadoSorteioRepository;
         private readonly IMensagemAnonimaRepository _mensagemAnonimaRepository;
+        private readonly IListaDesejosRepository _listaDesejosRepository;
+        private readonly IItensListaDesejosRepository _itensListaDesejosRepository;
         private readonly IMapper _mapper;
 
-        public AmigoSecretoService(IEventoRepository eventoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository, IResultadoSorteioRepository resultadoSorteioRepository, IMensagemAnonimaRepository mensagemAnonimaRepository, IMapper mapper)
+        public AmigoSecretoService(IEventoRepository eventoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository, IResultadoSorteioRepository resultadoSorteioRepository, IMensagemAnonimaRepository mensagemAnonimaRepository, IListaDesejosRepository listaDesejosRepository, IItensListaDesejosRepository itensListaDesejosRepository, IMapper mapper)
         {
             _eventoRepository = eventoRepository;
             _confirmacaoEventoRepository = confirmacaoEventoRepository;
             _resultadoSorteioRepository = resultadoSorteioRepository;
             _mensagemAnonimaRepository = mensagemAnonimaRepository;
+            _listaDesejosRepository = listaDesejosRepository;
+            _itensListaDesejosRepository = itensListaDesejosRepository;
             _mapper = mapper;
         }
 
@@ -215,12 +220,17 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
 
             if (comoPresenteador is not null)
             {
+                var listaDoRecebedor = await _listaDesejosRepository
+                    .BuscarPorEventoEUsuario(eventoId, comoPresenteador.RecebedorId);
+
                 resultado.ComoPresenteador = new ResultadoComoPresenteadorDto
                 {
                     ResultadoSorteioId = comoPresenteador.Id,
                     NomeRecebedor = comoPresenteador.Recebedor?.Nome ?? "Desconhecido",
                     FotoRecebedor = comoPresenteador.Recebedor?.FotoPerdilUrl,
-                    //ListaDesejos = evento is AniversarioEvento aniversario && aniversario.ListaDesejos is not null ? _mapper.Map<ExibirListaDesejosDto>(aniversario.ListaDesejos) : null
+                    ListaDesejos = listaDoRecebedor is not null
+                        ? _mapper.Map<ExibirListaDesejosDto>(listaDoRecebedor)
+                        : null
                 };
             }
 
@@ -277,6 +287,58 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
 
             if (resultado.PresenteadorId != usuarioId && resultado.RecebedorId != usuarioId)
                 throw new UnathorizedException("Você não faz parte deste par de amigo secreto.");
+        }
+
+        public async Task<ExibirListaDesejosDto> BuscarMinhaLista(Guid eventoId, Guid usuarioId)
+        {
+            var lista = await ObterOuCriarLista(eventoId, usuarioId);
+            return _mapper.Map<ExibirListaDesejosDto>(lista);
+        }
+
+        public async Task<ExibirItemListaDesejosDto> AdicionarItemMinhaLista(Guid eventoId, Guid usuarioId, CriarItemListaDesejosDto dto)
+        {
+            var lista = await ObterOuCriarLista(eventoId, usuarioId);
+
+            var item = new ItensListaDesejos
+            {
+                Descricao = dto.Descricao,
+                UrlReference = dto.UrlReference ?? string.Empty,
+                ListaDesejosId = lista.Id
+            };
+
+            await _itensListaDesejosRepository.Inserir(item);
+            return _mapper.Map<ExibirItemListaDesejosDto>(item);
+        }
+
+        public async Task RemoverItemMinhaLista(Guid itemId, Guid usuarioId)
+        {
+            var item = await _itensListaDesejosRepository.BuscarPorId(itemId)
+                ?? throw new NotFoundException("Item não encontrado.");
+
+            var lista = await _listaDesejosRepository.SelecionarPorId(item.ListaDesejosId);
+
+            if (lista?.UsuarioId != usuarioId)
+                throw new UnathorizedException("Você só pode remover itens da sua própria lista.");
+
+            await _itensListaDesejosRepository.Excluir(item);
+        }
+
+        private async Task<ListaDesejos> ObterOuCriarLista(Guid eventoId, Guid usuarioId)
+        {
+            var lista = await _listaDesejosRepository.BuscarPorEventoEUsuario(eventoId, usuarioId);
+
+            if (lista is null)
+            {
+                lista = new ListaDesejos
+                {
+                    Titulo = "Minha lista de desejos",
+                    EventoId = eventoId,
+                    UsuarioId = usuarioId
+                };
+                await _listaDesejosRepository.Inserir(lista);
+            }
+
+            return lista;
         }
 
     }

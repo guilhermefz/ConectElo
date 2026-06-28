@@ -1,4 +1,5 @@
 ﻿using ConectElo.Application.Areas.AmigoSecreto.DTOs;
+using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
 
 namespace ConectElo.Application.Areas.AmigoSecreto.InterfacesService
 {
@@ -12,5 +13,8 @@ namespace ConectElo.Application.Areas.AmigoSecreto.InterfacesService
         Task<MeuResultadoDto> BuscarMeuResultado( Guid eventoId, Guid usuarioId);
         Task<List<MensagemAnonimaDto>> BuscarHistorico( Guid resultadoSorteioId, Guid usuarioId);
         Task<MensagemAnonimaDto> EnviarMensagem( Guid resultadoSorteioId, Guid usuarioId, string conteudo);
+        Task<ExibirListaDesejosDto> BuscarMinhaLista( Guid eventoId, Guid usuarioId);
+        Task<ExibirItemListaDesejosDto> AdicionarItemMinhaLista( Guid eventoId, Guid usuarioId, CriarItemListaDesejosDto dto);
+        Task RemoverItemMinhaLista( Guid itemId, Guid usuarioId);
     }
 }

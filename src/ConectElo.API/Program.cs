@@ -178,6 +178,7 @@ namespace ConectElo.API
             builder.Services.AddScoped<IConfirmacaoEventoRepository, ConfirmacaoEventoRepository>();
             builder.Services.AddScoped<IConfirmacaoEventoService, ConfirmacaoEventoService>();
             builder.Services.AddScoped<IItensListaDesejosRepository, ItensListaDesejosRepository>();
+            builder.Services.AddScoped<IListaDesejosRepository, ListaDesejosRepository>();
             builder.Services.AddScoped<INotificacoesRepository, NotificacaoRepository>();
             builder.Services.AddScoped<INotificacaoService, NotificacaoService>();
             builder.Services.AddScoped<IHomeService, HomeService>();

@@ -2,6 +2,7 @@
 using ConectElo.API.Areas.Base.Controllers;
 using ConectElo.Application.Areas.AmigoSecreto.DTOs;
 using ConectElo.Application.Areas.AmigoSecreto.InterfacesService;
+using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -119,6 +120,48 @@ namespace ConectElo.API.Areas.AmigoSecreto.Controllers
                     .BuscarHistorico(resultadoSorteioId, UsuarioIdLogado);
 
                 return OkResponse(historico, "Histórico buscado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpGet("{eventoId}/MinhaLista")]
+        public async Task<IActionResult> BuscarMinhaLista(Guid eventoId)
+        {
+            try
+            {
+                var lista = await _amigoSecretoService.BuscarMinhaLista(eventoId, UsuarioIdLogado);
+                return OkResponse(lista, "Lista buscada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpPost("{eventoId}/MinhaLista/Itens")]
+        public async Task<IActionResult> AdicionarItemMinhaLista(Guid eventoId, [FromBody] CriarItemListaDesejosDto dto)
+        {
+            try
+            {
+                var item = await _amigoSecretoService.AdicionarItemMinhaLista(eventoId, UsuarioIdLogado, dto);
+                return OkResponse(item, "Item adicionado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpDelete("ListaDesejos/Itens/{itemId}")]
+        public async Task<IActionResult> RemoverItemMinhaLista(Guid itemId)
+        {
+            try
+            {
+                await _amigoSecretoService.RemoverItemMinhaLista(itemId, UsuarioIdLogado);
+                return OkResponse("Item removido com sucesso.");
             }
             catch (Exception ex)
             {
