@@ -159,6 +159,7 @@ namespace ConectElo.API
             .AddEntityFrameworkStores<AppDbContext>();
             
             builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+            builder.Services.AddScoped<IInteresseRepository, InteresseRepository>();
             builder.Services.AddScoped<IAutenticacaoService, AutenticacaoService>();
             builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
             builder.Services.AddScoped<IGrupoService, GrupoService>();

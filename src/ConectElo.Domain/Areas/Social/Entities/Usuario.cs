@@ -21,5 +21,6 @@ namespace ConectElo.Domain.Areas.Social.Entities
         public bool UsuarioAtivo { get; set; }
         public string? Bio {  get; set; }
         public DateTime? DataDelecao { get; set; }
+        public virtual ICollection<Interesse> Interesses { get; set; } = new List<Interesse>();
     }
 }

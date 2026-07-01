@@ -21,7 +21,10 @@ namespace ConectElo.Application.Areas.Social.Mappers
             CreateMap<Usuario, PerfilUsuarioDto>()
                 .ForMember(dest => dest.FotoPerfilUrl, opt => opt.MapFrom(src => src.FotoPerdilUrl));
             CreateMap<PerfilUsuarioDto, Usuario>()
-                .ForMember(dest => dest.FotoPerdilUrl, opt => opt.MapFrom(src => src.FotoPerfilUrl));
+                .ForMember(dest => dest.FotoPerdilUrl, opt => opt.MapFrom(src => src.FotoPerfilUrl))
+                .ForMember(dest => dest.Interesses, opt => opt.Ignore());
+
+            CreateMap<Interesse, InteresseDto>();
         }
     }
 }

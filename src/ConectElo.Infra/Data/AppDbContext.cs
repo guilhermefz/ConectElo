@@ -32,6 +32,7 @@ namespace ConectElo.Infra.Data
         public DbSet<Postagens> Postagens { get; set; }
         public DbSet<ResultadoSorteio> ResultadoSorteios { get; set; }
         public DbSet<MensagemAnonima> MensagensAnonimas { get; set; }
+        public DbSet<Interesse> Interesses { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -57,6 +58,28 @@ namespace ConectElo.Infra.Data
                 .WithMany()
                 .HasForeignKey(e => e.Criador)
                 .IsRequired(false);
+
+            modelBuilder.Entity<Interesse>()
+                .HasData(InteressesPadrao());
+        }
+
+        private static IEnumerable<Interesse> InteressesPadrao()
+        {
+            string[] nomes =
+            {
+                "Café", "Sushi", "Cozinhar", "Vinho", "Música",
+                "Filmes", "Livros", "Games", "Academia", "Corrida",
+                "Futebol", "Boxe", "Praia", "Viagens", "Fotografia",
+                "Arte", "Museus", "Tecnologia", "Programação", "Carros",
+                "Moda", "Tatuagens", "Cachorros", "Jardinagem", "Jogos de tabuleiro",
+                "Podcasts", "Astrologia", "Festivais", "Baladas", "Stand-up Comedy"
+            };
+
+            return nomes.Select((nome, i) => new Interesse
+            {
+                Id = Guid.Parse($"a1f1c0d0-0000-0000-0000-{(i + 1):x12}"),
+                Nome = nome
+            });
         }
     }
 }

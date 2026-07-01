@@ -3,6 +3,7 @@ using ConectElo.Application.Areas.Social.DTOs;
 using ConectElo.Application.Areas.Social.DTOs.Perfil;
 using ConectElo.Application.Areas.Social.InterfacesService;
 using ConectElo.Domain.Areas.Social.Entities;
+using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using ConectElo.Domain.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
@@ -12,13 +13,15 @@ namespace ConectElo.Application.Areas.Social.Services
     {
         private readonly UserManager<Usuario> _userManager;
         private readonly IArquivoService _arquivoService;
+        private readonly IInteresseRepository _interesseRepository;
         private readonly IMapper _mapper;
 
-        public UsuarioService(UserManager<Usuario> userManager, IMapper mapper, IArquivoService arquivoService)
+        public UsuarioService(UserManager<Usuario> userManager, IMapper mapper, IArquivoService arquivoService, IInteresseRepository interesseRepository)
         {
             _userManager = userManager;
             _mapper = mapper;
             _arquivoService = arquivoService;
+            _interesseRepository = interesseRepository;
         }
 
         public async Task<IdentityResult> CriarUsuario(RegistrarUsuarioDto usuario)
@@ -49,12 +52,17 @@ namespace ConectElo.Application.Areas.Social.Services
 
         public async Task<PerfilUsuarioDto> ObterPerfilAsync(Guid usuarioId)
         {
-            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString());
+            var usuario = await _interesseRepository.ObterUsuarioComInteresses(usuarioId);
 
             if (usuario == null)
                 throw new NotFoundException("Usuario não encontrado.");
 
-            return _mapper.Map<PerfilUsuarioDto>(usuario);
+            var perfil = _mapper.Map<PerfilUsuarioDto>(usuario);
+            perfil.Interesses = usuario.Interesses
+                .Select(i => new InteresseDto { Id = i.Id, Nome = i.Nome })
+                .ToList();
+
+            return perfil;
         }
 
         public async Task<PerfilUsuarioDto> AtualizarPerfilAsync(Guid usuarioId, AtualizarPerfilDto dto)
@@ -108,6 +116,43 @@ namespace ConectElo.Application.Areas.Social.Services
                 throw new NotFoundException("Erro ao salvar foto de perfil");
 
             return urlNovaFoto;
+        }
+
+        public async Task<List<InteresseDto>> ListarInteressesDisponiveisAsync()
+        {
+            var interesses = await _interesseRepository.ListarTodos();
+
+            return interesses
+                .Select(i => new InteresseDto { Id = i.Id, Nome = i.Nome })
+                .ToList();
+        }
+
+        public async Task<List<InteresseDto>> AtualizarInteressesAsync(Guid usuarioId, AtualizarInteressesDto dto)
+        {
+            var idsSelecionados = dto.InteresseIds.Distinct().ToList();
+
+            if (idsSelecionados.Count > 5)
+                throw new BusinessException("Você pode selecionar no máximo 5 interesses.");
+
+            var usuario = await _interesseRepository.ObterUsuarioComInteresses(usuarioId);
+
+            if (usuario == null)
+                throw new NotFoundException("Usuario não encontrado.");
+
+            var interesses = await _interesseRepository.ListarPorIds(idsSelecionados);
+
+            if (interesses.Count != idsSelecionados.Count)
+                throw new BusinessException("Um ou mais interesses selecionados não existem.");
+
+            usuario.Interesses.Clear();
+            foreach (var interesse in interesses)
+                usuario.Interesses.Add(interesse);
+
+            await _interesseRepository.CommitAsync();
+
+            return interesses
+                .Select(i => new InteresseDto { Id = i.Id, Nome = i.Nome })
+                .ToList();
         }
     }
 }
