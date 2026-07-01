@@ -168,5 +168,93 @@ namespace ConectElo.API.Areas.AmigoSecreto.Controllers
                 return ErrorResponse(ex);
             }
         }
+
+        [HttpGet("{eventoId}/Detalhe")]
+        public async Task<IActionResult> BuscarDetalhe(Guid eventoId)
+        {
+            try
+            {
+                var detalhe = await _amigoSecretoService.BuscarDetalhe(eventoId, UsuarioIdLogado);
+                return OkResponse(detalhe, "Detalhe buscado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpGet("QuizPerguntas")]
+        public async Task<IActionResult> ListarCatalogoQuiz()
+        {
+            try
+            {
+                var catalogo = await _amigoSecretoService.ListarCatalogoQuiz();
+                return OkResponse(catalogo, "Perguntas buscadas com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpPost("{eventoId}/Quiz/Perguntar")]
+        public async Task<IActionResult> PerguntarQuiz(Guid eventoId, [FromBody] PerguntarQuizDto dto)
+        {
+            try
+            {
+                var pergunta = await _amigoSecretoService
+                    .PerguntarQuiz(eventoId, UsuarioIdLogado, dto.PerguntaQuizId);
+                return OkResponse(pergunta, "Pergunta enviada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpPut("Quiz/{perguntaAmigoSecretoId}/Trocar")]
+        public async Task<IActionResult> TrocarPerguntaQuiz(Guid perguntaAmigoSecretoId, [FromBody] TrocarPerguntaQuizDto dto)
+        {
+            try
+            {
+                var pergunta = await _amigoSecretoService
+                    .TrocarPerguntaQuiz(perguntaAmigoSecretoId, UsuarioIdLogado, dto.NovaPerguntaQuizId);
+                return OkResponse(pergunta, "Pergunta trocada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpPut("Quiz/{perguntaAmigoSecretoId}/Responder")]
+        public async Task<IActionResult> ResponderQuiz(Guid perguntaAmigoSecretoId, [FromBody] ResponderQuizDto dto)
+        {
+            try
+            {
+                var pergunta = await _amigoSecretoService
+                    .ResponderQuiz(perguntaAmigoSecretoId, UsuarioIdLogado, dto.OpcaoId);
+                return OkResponse(pergunta, "Resposta registrada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpGet("{eventoId}/Quiz/Recebidas")]
+        public async Task<IActionResult> ListarPerguntasRecebidas(Guid eventoId)
+        {
+            try
+            {
+                var perguntas = await _amigoSecretoService
+                    .ListarPerguntasRecebidas(eventoId, UsuarioIdLogado);
+                return OkResponse(perguntas, "Perguntas buscadas com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
     }
 }

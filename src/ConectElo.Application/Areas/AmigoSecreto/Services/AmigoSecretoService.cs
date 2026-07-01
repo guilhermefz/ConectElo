@@ -3,10 +3,12 @@ using ConectElo.Application.Areas.AmigoSecreto.DTOs;
 using ConectElo.Application.Areas.AmigoSecreto.InterfacesService;
 using ConectElo.Application.Areas.AmigoSecreto.Utils;
 using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
+using ConectElo.Application.Areas.Social.DTOs.Perfil;
 using ConectElo.Domain.Areas.Dinamicas.Entities;
 using ConectElo.Domain.Areas.Dinamicas.Enuns;
 using ConectElo.Domain.Areas.Eventos.InterfacesRepository;
 using ConectElo.Domain.Areas.Geral.Enuns;
+using ConectElo.Domain.Areas.Social.InterfacesRepository;
 using ConectElo.Domain.Exceptions;
 using Hangfire;
 
@@ -20,9 +22,14 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
         private readonly IMensagemAnonimaRepository _mensagemAnonimaRepository;
         private readonly IListaDesejosRepository _listaDesejosRepository;
         private readonly IItensListaDesejosRepository _itensListaDesejosRepository;
+        private readonly IPerguntaQuizRepository _perguntaQuizRepository;
+        private readonly IPerguntaAmigoSecretoRepository _perguntaAmigoSecretoRepository;
+        private readonly IInteresseRepository _interesseRepository;
         private readonly IMapper _mapper;
 
-        public AmigoSecretoService(IEventoRepository eventoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository, IResultadoSorteioRepository resultadoSorteioRepository, IMensagemAnonimaRepository mensagemAnonimaRepository, IListaDesejosRepository listaDesejosRepository, IItensListaDesejosRepository itensListaDesejosRepository, IMapper mapper)
+        private const int SlotsQuizMaximo = 3;
+
+        public AmigoSecretoService(IEventoRepository eventoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository, IResultadoSorteioRepository resultadoSorteioRepository, IMensagemAnonimaRepository mensagemAnonimaRepository, IListaDesejosRepository listaDesejosRepository, IItensListaDesejosRepository itensListaDesejosRepository, IPerguntaQuizRepository perguntaQuizRepository, IPerguntaAmigoSecretoRepository perguntaAmigoSecretoRepository, IInteresseRepository interesseRepository, IMapper mapper)
         {
             _eventoRepository = eventoRepository;
             _confirmacaoEventoRepository = confirmacaoEventoRepository;
@@ -30,6 +37,9 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             _mensagemAnonimaRepository = mensagemAnonimaRepository;
             _listaDesejosRepository = listaDesejosRepository;
             _itensListaDesejosRepository = itensListaDesejosRepository;
+            _perguntaQuizRepository = perguntaQuizRepository;
+            _perguntaAmigoSecretoRepository = perguntaAmigoSecretoRepository;
+            _interesseRepository = interesseRepository;
             _mapper = mapper;
         }
 
@@ -339,6 +349,188 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             }
 
             return lista;
+        }
+
+        // ─────────────────────────── Detalhe + Quiz ───────────────────────────
+
+        public async Task<AmigoSecretoDetalheDto> BuscarDetalhe(Guid eventoId, Guid usuarioId)
+        {
+            var evento = await BuscarAmigoSecreto(eventoId);
+
+            if (!evento.Sorteado)
+                throw new BusinessException("O sorteio ainda não foi realizado.");
+
+            var comoPresenteador = await _resultadoSorteioRepository.BuscarComoPresenteador(eventoId, usuarioId)
+                ?? throw new NotFoundException("Você ainda não possui um amigo secreto neste evento.");
+
+            var recebedor = await _interesseRepository.ObterUsuarioComInteresses(comoPresenteador.RecebedorId)
+                ?? throw new NotFoundException("Recebedor não encontrado.");
+
+            var lista = await _listaDesejosRepository
+                .BuscarPorEventoEUsuario(eventoId, comoPresenteador.RecebedorId);
+
+            var perguntasAtivas = await _perguntaAmigoSecretoRepository
+                .ListarAtivasPorResultado(comoPresenteador.Id);
+
+            var catalogo = await _perguntaQuizRepository.ListarAtivasComOpcoes();
+
+            return new AmigoSecretoDetalheDto
+            {
+                ResultadoSorteioId = comoPresenteador.Id,
+                NomeRecebedor = recebedor.Nome,
+                FotoRecebedor = recebedor.FotoPerdilUrl,
+                Bio = recebedor.Bio,
+                Idade = CalcularIdade(recebedor.DataNascimento),
+                Genero = recebedor.Genero,
+                Interesses = recebedor.Interesses
+                    .Select(i => new InteresseDto { Id = i.Id, Nome = i.Nome })
+                    .ToList(),
+                ListaDesejos = lista is not null
+                    ? _mapper.Map<ExibirListaDesejosDto>(lista)
+                    : null,
+                Valor = evento.Valor,
+                DataSorteio = evento.DataSorteio,
+                SlotsTotais = SlotsQuizMaximo,
+                SlotsUsados = perguntasAtivas.Count,
+                PerguntasAtivas = perguntasAtivas.Select(MapPerguntaAtiva).ToList(),
+                PerguntasDisponiveis = _mapper.Map<List<PerguntaCatalogoDto>>(catalogo)
+            };
+        }
+
+        public async Task<List<PerguntaCatalogoDto>> ListarCatalogoQuiz()
+        {
+            var catalogo = await _perguntaQuizRepository.ListarAtivasComOpcoes();
+            return _mapper.Map<List<PerguntaCatalogoDto>>(catalogo);
+        }
+
+        public async Task<PerguntaAtivaDto> PerguntarQuiz(Guid eventoId, Guid usuarioId, Guid perguntaQuizId)
+        {
+            var comoPresenteador = await _resultadoSorteioRepository.BuscarComoPresenteador(eventoId, usuarioId)
+                ?? throw new NotFoundException("Você ainda não possui um amigo secreto neste evento.");
+
+            var ativas = await _perguntaAmigoSecretoRepository.ContarAtivasPorResultado(comoPresenteador.Id);
+            if (ativas >= SlotsQuizMaximo)
+                throw new BusinessException($"Você só pode manter {SlotsQuizMaximo} perguntas ativas por vez. Troque uma pergunta existente.");
+
+            var pergunta = await _perguntaQuizRepository.BuscarComOpcoes(perguntaQuizId);
+            if (pergunta is null || !pergunta.Ativa)
+                throw new NotFoundException("Pergunta não encontrada.");
+
+            if (await _perguntaAmigoSecretoRepository.ExisteAtivaComPergunta(comoPresenteador.Id, perguntaQuizId))
+                throw new BusinessException("Você já fez essa pergunta.");
+
+            var nova = new PerguntaAmigoSecreto
+            {
+                ResultadoSorteioId = comoPresenteador.Id,
+                PerguntaQuizId = perguntaQuizId,
+                Status = StatusPerguntaEnum.Ativa,
+                PerguntadaEm = DateTime.UtcNow
+            };
+
+            await _perguntaAmigoSecretoRepository.Inserir(nova);
+            nova.PerguntaQuiz = pergunta;
+
+            return MapPerguntaAtiva(nova);
+        }
+
+        public async Task<PerguntaAtivaDto> TrocarPerguntaQuiz(Guid perguntaAmigoSecretoId, Guid usuarioId, Guid novaPerguntaQuizId)
+        {
+            var atual = await _perguntaAmigoSecretoRepository.BuscarCompletaPorId(perguntaAmigoSecretoId)
+                ?? throw new NotFoundException("Pergunta não encontrada.");
+
+            if (atual.ResultadoSorteio.PresenteadorId != usuarioId)
+                throw new UnathorizedException("Você só pode trocar suas próprias perguntas.");
+
+            if (atual.Status != StatusPerguntaEnum.Ativa)
+                throw new BusinessException("Esta pergunta não está mais ativa.");
+
+            var novaPergunta = await _perguntaQuizRepository.BuscarComOpcoes(novaPerguntaQuizId);
+            if (novaPergunta is null || !novaPergunta.Ativa)
+                throw new NotFoundException("Pergunta não encontrada.");
+
+            if (await _perguntaAmigoSecretoRepository.ExisteAtivaComPergunta(atual.ResultadoSorteioId, novaPerguntaQuizId))
+                throw new BusinessException("Você já fez essa pergunta.");
+
+            atual.Status = StatusPerguntaEnum.Substituida;
+            await _perguntaAmigoSecretoRepository.CommitAsync();
+
+            var nova = new PerguntaAmigoSecreto
+            {
+                ResultadoSorteioId = atual.ResultadoSorteioId,
+                PerguntaQuizId = novaPerguntaQuizId,
+                Status = StatusPerguntaEnum.Ativa,
+                PerguntadaEm = DateTime.UtcNow
+            };
+
+            await _perguntaAmigoSecretoRepository.Inserir(nova);
+            nova.PerguntaQuiz = novaPergunta;
+
+            return MapPerguntaAtiva(nova);
+        }
+
+        public async Task<PerguntaRecebidaDto> ResponderQuiz(Guid perguntaAmigoSecretoId, Guid usuarioId, Guid opcaoId)
+        {
+            var pergunta = await _perguntaAmigoSecretoRepository.BuscarCompletaPorId(perguntaAmigoSecretoId)
+                ?? throw new NotFoundException("Pergunta não encontrada.");
+
+            if (pergunta.ResultadoSorteio.RecebedorId != usuarioId)
+                throw new UnathorizedException("Você só pode responder perguntas destinadas a você.");
+
+            if (pergunta.Status != StatusPerguntaEnum.Ativa)
+                throw new BusinessException("Esta pergunta não está mais ativa.");
+
+            var opcao = pergunta.PerguntaQuiz.Opcoes.FirstOrDefault(o => o.Id == opcaoId)
+                ?? throw new BusinessException("A opção escolhida não pertence a esta pergunta.");
+
+            pergunta.OpcaoRespostaId = opcao.Id;
+            pergunta.RespondidaEm = DateTime.UtcNow;
+
+            await _perguntaAmigoSecretoRepository.CommitAsync();
+
+            return MapPerguntaRecebida(pergunta);
+        }
+
+        public async Task<List<PerguntaRecebidaDto>> ListarPerguntasRecebidas(Guid eventoId, Guid usuarioId)
+        {
+            var comoRecebedor = await _resultadoSorteioRepository.BuscarComoRecebedor(eventoId, usuarioId);
+            if (comoRecebedor is null)
+                return new List<PerguntaRecebidaDto>();
+
+            var perguntas = await _perguntaAmigoSecretoRepository
+                .ListarRecebidasPorEvento(eventoId, usuarioId);
+
+            return perguntas.Select(MapPerguntaRecebida).ToList();
+        }
+
+        private PerguntaAtivaDto MapPerguntaAtiva(PerguntaAmigoSecreto p) => new()
+        {
+            PerguntaAmigoSecretoId = p.Id,
+            PerguntaQuizId = p.PerguntaQuizId,
+            Texto = p.PerguntaQuiz?.Texto ?? string.Empty,
+            Resposta = p.OpcaoResposta is not null ? _mapper.Map<OpcaoQuizDto>(p.OpcaoResposta) : null,
+            PerguntadaEm = p.PerguntadaEm,
+            RespondidaEm = p.RespondidaEm
+        };
+
+        private PerguntaRecebidaDto MapPerguntaRecebida(PerguntaAmigoSecreto p) => new()
+        {
+            PerguntaAmigoSecretoId = p.Id,
+            Texto = p.PerguntaQuiz?.Texto ?? string.Empty,
+            Opcoes = _mapper.Map<List<OpcaoQuizDto>>(p.PerguntaQuiz?.Opcoes ?? new List<OpcaoQuiz>()),
+            OpcaoRespostaId = p.OpcaoRespostaId
+        };
+
+        private static int? CalcularIdade(DateOnly nascimento)
+        {
+            if (nascimento == default)
+                return null;
+
+            var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
+            var idade = hoje.Year - nascimento.Year;
+            if (nascimento > hoje.AddYears(-idade))
+                idade--;
+
+            return idade;
         }
 
     }

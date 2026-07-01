@@ -16,5 +16,13 @@ namespace ConectElo.Application.Areas.AmigoSecreto.InterfacesService
         Task<ExibirListaDesejosDto> BuscarMinhaLista( Guid eventoId, Guid usuarioId);
         Task<ExibirItemListaDesejosDto> AdicionarItemMinhaLista( Guid eventoId, Guid usuarioId, CriarItemListaDesejosDto dto);
         Task RemoverItemMinhaLista( Guid itemId, Guid usuarioId);
+
+        // Detalhe + quiz
+        Task<AmigoSecretoDetalheDto> BuscarDetalhe( Guid eventoId, Guid usuarioId);
+        Task<List<PerguntaCatalogoDto>> ListarCatalogoQuiz();
+        Task<PerguntaAtivaDto> PerguntarQuiz( Guid eventoId, Guid usuarioId, Guid perguntaQuizId);
+        Task<PerguntaAtivaDto> TrocarPerguntaQuiz( Guid perguntaAmigoSecretoId, Guid usuarioId, Guid novaPerguntaQuizId);
+        Task<PerguntaRecebidaDto> ResponderQuiz( Guid perguntaAmigoSecretoId, Guid usuarioId, Guid opcaoId);
+        Task<List<PerguntaRecebidaDto>> ListarPerguntasRecebidas( Guid eventoId, Guid usuarioId);
     }
 }

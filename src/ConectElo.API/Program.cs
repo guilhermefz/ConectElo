@@ -185,6 +185,8 @@ namespace ConectElo.API
             builder.Services.AddScoped<IHomeService, HomeService>();
             builder.Services.AddScoped<IResultadoSorteioRepository, ResultadoSorteioRepository>();
             builder.Services.AddScoped<IMensagemAnonimaRepository, MensagemAnonimaRepository>();
+            builder.Services.AddScoped<IPerguntaQuizRepository, PerguntaQuizRepository>();
+            builder.Services.AddScoped<IPerguntaAmigoSecretoRepository, PerguntaAmigoSecretoRepository>();
             builder.Services.AddScoped<IAmigoSecretoService, AmigoSecretoService>();
 
 

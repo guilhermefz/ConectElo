@@ -9,6 +9,9 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Mappers
         public AmigoSecretoProfile()
         {
              CreateMap<MensagemAnonima, MensagemAnonimaDto>();
+
+             CreateMap<OpcaoQuiz, OpcaoQuizDto>();
+             CreateMap<PerguntaQuiz, PerguntaCatalogoDto>();
         }
     }
 }
