@@ -20,7 +20,7 @@ namespace ConectElo.Application.Areas.AmigoSecreto.InterfacesService
         // Detalhe + quiz
         Task<AmigoSecretoDetalheDto> BuscarDetalhe( Guid eventoId, Guid usuarioId);
         Task<List<PerguntaCatalogoDto>> ListarCatalogoQuiz();
-        Task<PerguntaAtivaDto> PerguntarQuiz( Guid eventoId, Guid usuarioId, Guid perguntaQuizId);
+        Task<PerguntarQuizResultadoDto> PerguntarQuiz( Guid eventoId, Guid usuarioId, Guid perguntaQuizId);
         Task<PerguntaAtivaDto> TrocarPerguntaQuiz( Guid perguntaAmigoSecretoId, Guid usuarioId, Guid novaPerguntaQuizId);
         Task<PerguntaRecebidaDto> ResponderQuiz( Guid perguntaAmigoSecretoId, Guid usuarioId, Guid opcaoId);
         Task<List<PerguntaRecebidaDto>> ListarPerguntasRecebidas( Guid eventoId, Guid usuarioId);

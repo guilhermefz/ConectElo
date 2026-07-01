@@ -70,6 +70,23 @@ namespace ConectElo.Application.Areas.Comunicacao.Services
             return notificacaoModel;
         }
 
+        public async Task<ExibirNotificacaoDto> CriarNotificacaoPerguntaAmigoSecreto(Guid recebedorId, Guid eventoId)
+        {
+            var notificacao = new Notificacoes
+            {
+                UsuarioId = recebedorId,
+                Conteudo = "Seu amigo secreto quer te conhecer! Responda a nova pergunta do quiz.",
+                LinkUrl = $"/eventos/{eventoId}",
+                NotificacaoLida = false,
+                DataEnvio = DateTime.UtcNow,
+                TipoNotificacao = TipoNotificacaoEnum.Social
+            };
+
+            await _notificacaoRepository.Inserir(notificacao);
+
+            return _mapper.Map<ExibirNotificacaoDto>(notificacao);
+        }
+
         public async Task MarcarTodasComoLidas(Guid usuarioId)
         {
             await _notificacaoRepository.MarcarTodasComoLidasAsync(usuarioId);

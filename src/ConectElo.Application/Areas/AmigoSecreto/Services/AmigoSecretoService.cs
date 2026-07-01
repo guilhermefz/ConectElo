@@ -2,6 +2,7 @@
 using ConectElo.Application.Areas.AmigoSecreto.DTOs;
 using ConectElo.Application.Areas.AmigoSecreto.InterfacesService;
 using ConectElo.Application.Areas.AmigoSecreto.Utils;
+using ConectElo.Application.Areas.Comunicacao.InterfacesService;
 using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
 using ConectElo.Application.Areas.Social.DTOs.Perfil;
 using ConectElo.Domain.Areas.Dinamicas.Entities;
@@ -25,11 +26,12 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
         private readonly IPerguntaQuizRepository _perguntaQuizRepository;
         private readonly IPerguntaAmigoSecretoRepository _perguntaAmigoSecretoRepository;
         private readonly IInteresseRepository _interesseRepository;
+        private readonly INotificacaoService _notificacaoService;
         private readonly IMapper _mapper;
 
         private const int SlotsQuizMaximo = 3;
 
-        public AmigoSecretoService(IEventoRepository eventoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository, IResultadoSorteioRepository resultadoSorteioRepository, IMensagemAnonimaRepository mensagemAnonimaRepository, IListaDesejosRepository listaDesejosRepository, IItensListaDesejosRepository itensListaDesejosRepository, IPerguntaQuizRepository perguntaQuizRepository, IPerguntaAmigoSecretoRepository perguntaAmigoSecretoRepository, IInteresseRepository interesseRepository, IMapper mapper)
+        public AmigoSecretoService(IEventoRepository eventoRepository, IConfirmacaoEventoRepository confirmacaoEventoRepository, IResultadoSorteioRepository resultadoSorteioRepository, IMensagemAnonimaRepository mensagemAnonimaRepository, IListaDesejosRepository listaDesejosRepository, IItensListaDesejosRepository itensListaDesejosRepository, IPerguntaQuizRepository perguntaQuizRepository, IPerguntaAmigoSecretoRepository perguntaAmigoSecretoRepository, IInteresseRepository interesseRepository, INotificacaoService notificacaoService, IMapper mapper)
         {
             _eventoRepository = eventoRepository;
             _confirmacaoEventoRepository = confirmacaoEventoRepository;
@@ -40,6 +42,7 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             _perguntaQuizRepository = perguntaQuizRepository;
             _perguntaAmigoSecretoRepository = perguntaAmigoSecretoRepository;
             _interesseRepository = interesseRepository;
+            _notificacaoService = notificacaoService;
             _mapper = mapper;
         }
 
@@ -403,7 +406,7 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             return _mapper.Map<List<PerguntaCatalogoDto>>(catalogo);
         }
 
-        public async Task<PerguntaAtivaDto> PerguntarQuiz(Guid eventoId, Guid usuarioId, Guid perguntaQuizId)
+        public async Task<PerguntarQuizResultadoDto> PerguntarQuiz(Guid eventoId, Guid usuarioId, Guid perguntaQuizId)
         {
             var comoPresenteador = await _resultadoSorteioRepository.BuscarComoPresenteador(eventoId, usuarioId)
                 ?? throw new NotFoundException("Você ainda não possui um amigo secreto neste evento.");
@@ -430,7 +433,14 @@ namespace ConectElo.Application.Areas.AmigoSecreto.Services
             await _perguntaAmigoSecretoRepository.Inserir(nova);
             nova.PerguntaQuiz = pergunta;
 
-            return MapPerguntaAtiva(nova);
+            var notificacao = await _notificacaoService
+                .CriarNotificacaoPerguntaAmigoSecreto(comoPresenteador.RecebedorId, eventoId);
+
+            return new PerguntarQuizResultadoDto
+            {
+                Pergunta = MapPerguntaAtiva(nova),
+                NotificacaoRecebedor = notificacao
+            };
         }
 
         public async Task<PerguntaAtivaDto> TrocarPerguntaQuiz(Guid perguntaAmigoSecretoId, Guid usuarioId, Guid novaPerguntaQuizId)

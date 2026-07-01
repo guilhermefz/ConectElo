@@ -1,5 +1,6 @@
 ﻿using ConectElo.API.Areas.AmigoSecreto.Hubs;
 using ConectElo.API.Areas.Base.Controllers;
+using ConectElo.API.Areas.Comunicacao.Hubs;
 using ConectElo.Application.Areas.AmigoSecreto.DTOs;
 using ConectElo.Application.Areas.AmigoSecreto.InterfacesService;
 using ConectElo.Application.Areas.Social.DTOs.EventosDTO;
@@ -16,11 +17,13 @@ namespace ConectElo.API.Areas.AmigoSecreto.Controllers
     {
         private readonly IAmigoSecretoService _amigoSecretoService;
         private readonly IHubContext<AmigoSecretoHub> _hubContext;
+        private readonly IHubContext<ChatHub> _avisosHubContext;
 
-        public AmigoSecretoController(IWebHostEnvironment env, IAmigoSecretoService amigoSecretoService, IHubContext<AmigoSecretoHub> hubContext) : base(env)
+        public AmigoSecretoController(IWebHostEnvironment env, IAmigoSecretoService amigoSecretoService, IHubContext<AmigoSecretoHub> hubContext, IHubContext<ChatHub> avisosHubContext) : base(env)
         {
             _amigoSecretoService = amigoSecretoService;
             _hubContext = hubContext;
+            _avisosHubContext = avisosHubContext;
         }
 
         [HttpPost("{eventoId}/Agendar")]
@@ -202,9 +205,15 @@ namespace ConectElo.API.Areas.AmigoSecreto.Controllers
         {
             try
             {
-                var pergunta = await _amigoSecretoService
+                var resultado = await _amigoSecretoService
                     .PerguntarQuiz(eventoId, UsuarioIdLogado, dto.PerguntaQuizId);
-                return OkResponse(pergunta, "Pergunta enviada com sucesso.");
+
+                var aviso = resultado.NotificacaoRecebedor;
+                await _avisosHubContext.Clients
+                    .User(aviso.UsuarioId.ToString())
+                    .SendAsync("ReceberAviso", aviso);
+
+                return OkResponse(resultado.Pergunta, "Pergunta enviada com sucesso.");
             }
             catch (Exception ex)
             {
