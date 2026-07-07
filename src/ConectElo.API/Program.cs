@@ -159,6 +159,7 @@ namespace ConectElo.API
             .AddEntityFrameworkStores<AppDbContext>();
             
             builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+            builder.Services.AddScoped<IInteresseRepository, InteresseRepository>();
             builder.Services.AddScoped<IAutenticacaoService, AutenticacaoService>();
             builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
             builder.Services.AddScoped<IGrupoService, GrupoService>();
@@ -178,11 +179,14 @@ namespace ConectElo.API
             builder.Services.AddScoped<IConfirmacaoEventoRepository, ConfirmacaoEventoRepository>();
             builder.Services.AddScoped<IConfirmacaoEventoService, ConfirmacaoEventoService>();
             builder.Services.AddScoped<IItensListaDesejosRepository, ItensListaDesejosRepository>();
+            builder.Services.AddScoped<IListaDesejosRepository, ListaDesejosRepository>();
             builder.Services.AddScoped<INotificacoesRepository, NotificacaoRepository>();
             builder.Services.AddScoped<INotificacaoService, NotificacaoService>();
             builder.Services.AddScoped<IHomeService, HomeService>();
             builder.Services.AddScoped<IResultadoSorteioRepository, ResultadoSorteioRepository>();
             builder.Services.AddScoped<IMensagemAnonimaRepository, MensagemAnonimaRepository>();
+            builder.Services.AddScoped<IPerguntaQuizRepository, PerguntaQuizRepository>();
+            builder.Services.AddScoped<IPerguntaAmigoSecretoRepository, PerguntaAmigoSecretoRepository>();
             builder.Services.AddScoped<IAmigoSecretoService, AmigoSecretoService>();
 
 

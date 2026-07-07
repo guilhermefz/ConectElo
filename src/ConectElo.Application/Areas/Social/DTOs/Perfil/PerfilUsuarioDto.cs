@@ -11,5 +11,6 @@ namespace ConectElo.Application.Areas.Social.DTOs.Perfil
         public string? FotoPerfilUrl { get; set; }
         public DateOnly DataNascimento { get; set; }
         public GeneroEnum Genero { get; set; }
+        public List<InteresseDto> Interesses { get; set; } = new();
     }
 }

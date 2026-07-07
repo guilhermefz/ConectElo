@@ -49,6 +49,36 @@ namespace ConectElo.API.Areas.Social.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("InteressesDisponiveis")]
+        public async Task<IActionResult> InteressesDisponiveis()
+        {
+            try
+            {
+                var resultado = await _usuarioService.ListarInteressesDisponiveisAsync();
+                return OkResponse(resultado);
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
+        [HttpPut]
+        [Route("AtualizarInteresses")]
+        public async Task<IActionResult> AtualizarInteresses([FromBody] AtualizarInteressesDto dto)
+        {
+            try
+            {
+                var resultado = await _usuarioService.AtualizarInteressesAsync(usuarioIdLogado, dto);
+                return OkResponse(resultado, "Interesses atualizados com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(ex);
+            }
+        }
+
         [HttpPatch("AtualizaFoto")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AtualizarFoto(IFormFile foto)

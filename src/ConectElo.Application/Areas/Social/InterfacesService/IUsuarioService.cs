@@ -20,5 +20,9 @@ namespace ConectElo.Application.Areas.Social.InterfacesService
         Task<PerfilUsuarioDto> AtualizarPerfilAsync(Guid usuarioId, AtualizarPerfilDto dto);
 
         Task<string> AtualizarFotoPerfilAsync(Guid usuarioId, AtualizarFotoDto foto);
+
+        Task<List<InteresseDto>> ListarInteressesDisponiveisAsync();
+
+        Task<List<InteresseDto>> AtualizarInteressesAsync(Guid usuarioId, AtualizarInteressesDto dto);
     }
 }
